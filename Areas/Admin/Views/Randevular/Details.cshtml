@@ -1,0 +1,198 @@
+@model AIROSWEB.DAL.Db.TblRandevular
+@{
+    ViewBag.Title = "Randevu Detayı";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center bg-white">
+                <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-info-circle me-2"></i> Randevu Detay Bilgileri</h6>
+                <a href="@Url.Action("Index")" class="btn btn-sm btn-secondary font-weight-bold">
+                    <i class="fas fa-arrow-left me-1"></i> Geri Dön
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-sm-4 font-weight-bold text-muted text-uppercase small">Müşteri:</div>
+                    <div class="col-sm-8 text-dark"><strong>@Model.AdSoyad</strong></div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4 font-weight-bold text-muted text-uppercase small">Telefon:</div>
+                    <div class="col-sm-8"><a href="tel:@Model.Telefon" class="text-decoration-none">@Model.Telefon</a></div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4 font-weight-bold text-muted text-uppercase small">E-posta:</div>
+                    <div class="col-sm-8">@(Model.Email ?? "-")</div>
+                </div>
+                <hr />
+                <div class="row mb-3">
+                    <div class="col-sm-4 font-weight-bold text-muted text-uppercase small">Hizmet:</div>
+                    <div class="col-sm-8"><span class="badge bg-info text-dark p-2">@Model.HizmetAdi</span></div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4 font-weight-bold text-muted text-uppercase small">Randevu Zamanı:</div>
+                    <div class="col-sm-8 text-primary font-weight-bold">
+                        <i class="fas fa-calendar-alt"></i> @(Model.RandevuTarihi.HasValue ? Model.RandevuTarihi.Value.ToString("dd MMMM yyyy") : "-") 
+                        <span class="ms-2"><i class="fas fa-clock"></i> @Model.RandevuSaati</span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4 font-weight-bold text-muted text-uppercase small">Adres:</div>
+                    <div class="col-sm-8 bg-light p-2 rounded">@(Model.Adres ?? "Adres bilgisi girilmemiş.")</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4 font-weight-bold text-muted text-uppercase small">Müşteri Notu:</div>
+                    <div class="col-sm-8 italic">@(string.IsNullOrEmpty(Model.Mesaj) ? "Mesaj yok." : Model.Mesaj)</div>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.KuponKodu))
+                {
+                <div class="row mb-3">
+                    <div class="col-sm-4 font-weight-bold text-success text-uppercase small">Kullanılan Kupon:</div>
+                    <div class="col-sm-8 text-success font-weight-bold"><i class="fas fa-ticket-alt"></i> @Model.KuponKodu</div>
+                </div>
+                }
+                <hr />
+                <div class="row">
+                    <div class="col-sm-4 font-weight-bold text-muted text-uppercase small">Randevu Durumu:</div>
+                    <div class="col-sm-8">
+                        @if (Model.Durum == "Beklemede")
+                        {
+                            <span class="badge bg-warning text-dark"><i class="fas fa-clock"></i> Beklemede</span>
+                        }
+                        else if (Model.Durum == "Onaylandı")
+                        {
+                            <span class="badge bg-success"><i class="fas fa-check"></i> Onaylandı</span>
+                        }
+                        else if (Model.Durum == "Tamamlandı")
+                        {
+                            <span class="badge bg-primary"><i class="fas fa-flag-checkered"></i> Tamamlandı</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">@Model.Durum</span>
+                        }
+                    </div>
+                </div>
+
+                @if (Model.TeknisyenId.HasValue)
+                {
+                    var atanmisTeknisyen = ((List<AIROSWEB.DAL.Db.TblAdmin>)ViewBag.Teknisyenler)?.FirstOrDefault(x => x.Id == Model.TeknisyenId);
+                    <div class="row mt-3">
+                        <div class="col-sm-4 font-weight-bold text-info text-uppercase small">Atanan Teknisyen:</div>
+                        <div class="col-sm-8 font-weight-bold">
+                            <i class="fas fa-user-cog text-info me-1"></i> @(atanmisTeknisyen != null ? atanmisTeknisyen.KullaniciAdi : "Bilinmiyor")
+                        </div>
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.AlinanUcret))
+                {
+                    <div class="row mt-3">
+                        <div class="col-sm-4 font-weight-bold text-success text-uppercase small">Alınan Ücret:</div>
+                        <div class="col-sm-8 font-weight-bold text-success">
+                            <i class="fas fa-lira-sign me-1"></i> @Model.AlinanUcret TL
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 bg-light">
+                <h6 class="m-0 font-weight-bold text-dark"><i class="fas fa-edit me-2"></i> Yönetici İşlemleri</h6>
+            </div>
+            <div class="card-body">
+                @using (Html.BeginForm("UpdateStatus", "Randevular", FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.HiddenFor(m => m.Id)
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Durum Güncelle:</label>
+                        <select name="durum" class="form-select">
+                            <option value="Beklemede" @(Model.Durum == "Beklemede" ? "selected" : "")>Beklemede</option>
+                            <option value="Onaylandı" @(Model.Durum == "Onaylandı" ? "selected" : "")>Onaylandı</option>
+                            <option value="Tamamlandı" @(Model.Durum == "Tamamlandı" ? "selected" : "")>Tamamlandı</option>
+                            <option value="İptal Edildi" @(Model.Durum == "İptal Edildi" ? "selected" : "")>İptal Edildi</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Yönetici Notu / Servis Raporu:</label>
+                        <textarea name="not" class="form-control" rows="4" placeholder="Yapılan işlemler, parça değişimleri veya müşteriye bilgi...">@Model.YoneticiNotu</textarea>
+                    </div>
+                    
+                    @if (Session["Rol"] != null && Session["Rol"].ToString() == "Teknisyen")
+                    {
+                        <div class="mb-3">
+                            <label class="form-label font-weight-bold text-success"><i class="fas fa-lira-sign"></i> Alınan Ücret (TL):</label>
+                            <input type="number" name="alinanUcret" class="form-control border-success" placeholder="Örn: 1500" value="@Model.AlinanUcret" />
+                            <small class="text-muted">Servis tamamlandığında tahsil edilen tutar.</small>
+                        </div>
+                    }
+                    <button type="submit" class="btn btn-primary btn-block w-100 font-weight-bold mb-3">
+                        <i class="fas fa-save me-1"></i> Güncelle ve Kaydet
+                    </button>
+                }
+
+                <hr />
+                
+                <label class="form-label font-weight-bold mb-2">Müşteriyi Bilgilendir:</label>
+                
+                @{
+                    var wpMesaj = $"Merhaba {Model.AdSoyad}, Airos Teknik Servis randevunuz ({(Model.RandevuTarihi.HasValue ? Model.RandevuTarihi.Value.ToString("dd.MM.yyyy") : "-")} - {Model.HizmetAdi}) onaylanmıştır. Ekibimiz belirttiğiniz saatte adreste olacaktır. İyi günler dileriz.";
+                    var wpLink = $"https://wa.me/90{Model.Telefon.Replace(" ", "").TrimStart('0')}?text={Uri.EscapeDataString(wpMesaj)}";
+
+                    var iptalMesaj = $"Merhaba {Model.AdSoyad}, Airos Teknik Servis randevunuz yoğunluk nedeniyle iptal edilmiştir. Yeni bir randevu oluşturmak için lütfen bizi arayın.";
+                    var iptalLink = $"https://wa.me/90{Model.Telefon.Replace(" ", "").TrimStart('0')}?text={Uri.EscapeDataString(iptalMesaj)}";
+                }
+
+                <a href="@wpLink" target="_blank" class="btn btn-success w-100 mb-2 font-weight-bold">
+                    <i class="fab fa-whatsapp me-1"></i> Onay Mesajı Gönder
+                </a>
+                
+                <a href="@iptalLink" target="_blank" class="btn btn-outline-danger w-100 small">
+                    <i class="fab fa-whatsapp me-1"></i> İptal Mesajı Gönder
+                </a>
+            </div>
+        </div>
+
+        @if (Session["Rol"] != null && Session["Rol"].ToString() == "Admin")
+        {
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <h6 class="m-0 font-weight-bold text-info"><i class="fas fa-user-tag me-2"></i> Teknisyen Ata</h6>
+                </div>
+                <div class="card-body">
+                    @using (Html.BeginForm("TeknisyenAta", "Randevular", FormMethod.Post))
+                    {
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="randevuId" value="@Model.Id" />
+                        <div class="mb-3">
+                            <label class="font-weight-bold small">Bir Teknisyen Seç:</label>
+                            <select name="teknisyenId" class="form-select border-info" required>
+                                <option value="">-- Teknisyen Seçiniz --</option>
+                                @if (ViewBag.Teknisyenler != null)
+                                {
+                                    foreach (var t in (List<AIROSWEB.DAL.Db.TblAdmin>)ViewBag.Teknisyenler)
+                                    {
+                                        <option value="@t.Id" @(Model.TeknisyenId == t.Id ? "selected" : "")>Ustabaşı: @t.KullaniciAdi</option>
+                                    }
+                                }
+                            </select>
+                            <small class="text-muted d-block mt-1">Seçim yapıp kaydettiğinizde randevu otomatik "Onaylandı" durumuna geçer ve Teknisyenin paneline düşer.</small>
+                        </div>
+                        <button type="submit" class="btn btn-info w-100 text-white font-weight-bold"><i class="fas fa-check me-1"></i> Teknisyene İşi Ver</button>
+                    }
+                </div>
+            </div>
+        }
+
+        <div class="alert alert-info small shadow-sm">
+            <i class="fas fa-lightbulb text-warning me-1"></i> 
+            <strong>Bilgi:</strong> Randevu durumu güncellendiğinde müşteriye bilgilendirme yapmayı ve sistem bilgilerini eksiksiz girmeyi unutmayın.
+        </div>
+    </div>
+</div>

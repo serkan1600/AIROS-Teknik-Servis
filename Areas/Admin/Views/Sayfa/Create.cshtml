@@ -1,0 +1,102 @@
+﻿@model AIROSWEB.DAL.Db.TblSayfalar
+@{
+    ViewBag.Title = "Yeni Sayfa Ekle";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <h4 class="mb-0"><i class="fas fa-plus"></i> Yeni Sayfa Ekle</h4>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm("Create", "Sayfa", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            @Html.AntiForgeryToken()
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" for="Baslik">Sayfa Başlığı <span class="text-danger">*</span></label>
+                    @Html.TextBoxFor(m => m.Baslik, new { @class = "form-control", required = "required" })
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label" for="Link">Link (Örn: /Home/Index)</label>
+                    @Html.TextBoxFor(m => m.Link, new { @class = "form-control", placeholder = "/Home/Index" })
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Üst Menü (Alt sayfa yapılacaksa seçiniz)</label>
+                    @Html.DropDownListFor(m => m.UstMenuId, (SelectList)ViewBag.UstMenuler, "Yok (Ana Menü)", new { @class = "form-select" })
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label" for="Konum">Konum</label>
+                    @Html.DropDownListFor(m => m.Konum, new SelectList(new[] { "Header", "Footer", "Both" }), new { @class = "form-select" })
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label" for="Sira">Sıra</label>
+                    @Html.TextBoxFor(m => m.Sira, new { @class = "form-control", type = "number", value = 0 })
+                </div>
+            </div>
+
+            <div class="row border p-3 bg-light mb-3">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label"><i class="fas fa-image"></i> Kapak Resmi / Banner</label>
+                    <input type="file" name="kapakResmi" class="form-control" accept="image/*" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label"><i class="fas fa-layer-group"></i> Şablon Tipi</label>
+                    @Html.DropDownListFor(m => m.Sablon, (SelectList)ViewBag.Sablonlar, new { @class = "form-select" })
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label"><i class="far fa-calendar-alt"></i> Yayın Tarihi (Boşsa Hemen Tıklanır)</label>
+                    <input type="datetime-local" name="YayinTarihi" class="form-control" value="@(Model.YayinTarihi.HasValue ? Model.YayinTarihi.Value.ToString("yyyy-MM-ddTHH:mm") : "")" />
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="Ozet">Kısa Özet / Açıklama (Vitrin kutucukları için)</label>
+                @Html.TextAreaFor(m => m.Ozet, new { @class = "form-control", rows = "2", placeholder = "Sayfanın kısa özetini buraya yazabilirsiniz..." })
+            </div>
+            
+            <hr />
+            <div class="mb-3">
+                <label class="form-label text-primary font-weight-bold"><i class="fas fa-file-alt"></i> Sayfa İçeriği (Word gibi yazabilirsiniz)</label>
+                <small class="text-muted d-block mb-2">Eğer bu sayfanın içi dolu, gerçek bir sayfa olmasını istiyorsanız buraya yazı veya resim ekleyin. Linkini menülere yazın.</small>
+                @Html.TextAreaFor(m => m.Icerik, new { @class = "form-control", id = "Icerik", rows = "10" })
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label text-info"><i class="fab fa-google"></i> Google SEO Başlığı (Meta Title)</label>
+                    @Html.TextBoxFor(m => m.MetaTitle, new { @class = "form-control" })
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label text-info"><i class="fab fa-google"></i> Google SEO Açıklaması (Meta Description)</label>
+                    <textarea name="MetaDescription" class="form-control" rows="2"></textarea>
+                </div>
+            </div>
+            <hr />
+            <div class="mb-3 form-check">
+                @Html.CheckBoxFor(m => m.AktifMi, new { @class = "form-check-input", @checked = "checked" })
+                <label class="form-check-label" for="AktifMi">Aktif</label>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Kaydet</button>
+        }
+    </div>
+</div>
+
+@section scripts {
+    <script src="https://cdn.ckeditor.com/4.22.1/full/ckeditor.js"></script>
+    <script>
+        CKEDITOR.replace('Icerik', {
+            language: 'tr',
+            height: 600,
+            versionCheck: false,
+            filebrowserImageUploadUrl: '@Url.Action("CkEditorUpload", "UploadSafe", new { area = "Admin" })',
+            filebrowserUploadUrl: '@Url.Action("CkEditorUpload", "UploadSafe", new { area = "Admin" })',
+            filebrowserUploadMethod: 'form',
+            uploadUrl: '@Url.Action("CkEditorUpload", "UploadSafe", new { area = "Admin" })',
+            extraPlugins: 'uploadimage'
+        });
+    </script>
+}

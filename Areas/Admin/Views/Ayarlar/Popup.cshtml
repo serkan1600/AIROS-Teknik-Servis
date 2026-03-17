@@ -1,0 +1,161 @@
+@model AIROSWEB.DAL.Db.TblAyarlar
+@{
+    ViewBag.Title = "Popup Kampanya Yönetimi";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="fas fa-check-circle"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning text-dark border-0">
+                <h4 class="mb-0 fw-bold"><i class="fas fa-bullhorn me-2"></i> Popup Kampanya</h4>
+            </div>
+            <div class="card-body bg-light">
+                @using (Html.BeginForm("Popup", "Ayarlar", FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.HiddenFor(m => m.Id)
+
+                    <div class="mb-4 text-center p-3 border rounded bg-white">
+                        <label class="form-label d-block fw-bold display-6 mb-3">Kampanya Durumu</label>
+                        <div class="form-check form-switch d-inline-block">
+                            @Html.CheckBox("PopupAktif", Model.PopupAktif.GetValueOrDefault(), new { @class = "form-check-input", style = "width: 4em; height: 2em; transform: scale(1.2); cursor: pointer;" })
+                        </div>
+                        <div class="mt-2 text-muted small" id="statusText">
+                            @(Model.PopupAktif == true ? "Şu an AKTİF (Ziyaretçilere gösteriliyor)" : "PASİF (Gizli)")
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Kampanya Başlığı</label>
+                        @Html.TextBoxFor(m => m.PopupBaslik, new { @class = "form-control form-control-lg", placeholder = "Örn: Kombi Bakımında %20 indirim!" })
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Kampanya İçeriği (Editör)</label>
+                        @Html.TextAreaFor(m => m.PopupIcerik, new { @class = "form-control", id = "editor" })
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold"><i class="fas fa-clock me-1 text-info"></i> Gösterim Gecikmesi (Saniye)</label>
+                        <select name="PopupGecikme" class="form-select form-select-lg">
+                            <option value="0" @(Model.PopupGecikme == 0 ? "selected" : "")>Hemen Göster (0 Sn.)</option>
+                            <option value="2" @(Model.PopupGecikme == 2 || Model.PopupGecikme == null ? "selected" : "")>2 Saniye Sonra (Önerilen)</option>
+                            <option value="5" @(Model.PopupGecikme == 5 ? "selected" : "")>5 Saniye Sonra</option>
+                            <option value="10" @(Model.PopupGecikme == 10 ? "selected" : "")>10 Saniye Sonra</option>
+                            <option value="15" @(Model.PopupGecikme == 15 ? "selected" : "")>15 Saniye Sonra</option>
+                            <option value="30" @(Model.PopupGecikme == 30 ? "selected" : "")>30 Saniye Sonra</option>
+                        </select>
+                        <small class="text-muted">Kullanıcı siteye girdikten kaç saniye sonra kampanya penceresi açılsın?</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold"><i class="fas fa-redo-alt me-1 text-success"></i> Tekrar Gösterim Süresi</label>
+                        <select name="PopupTekrarSuresi" class="form-select form-select-lg">
+                            <option value="0" @(Model.PopupTekrarSuresi == 0 ? "selected" : "")>Her Seferinde Göster (Sıfır)</option>
+                            <option value="1" @(Model.PopupTekrarSuresi == 1 ? "selected" : "")>1 Dakika Sonra</option>
+                            <option value="5" @(Model.PopupTekrarSuresi == 5 ? "selected" : "")>5 Dakika Sonra</option>
+                            <option value="15" @(Model.PopupTekrarSuresi == 15 ? "selected" : "")>15 Dakika Sonra</option>
+                            <option value="30" @(Model.PopupTekrarSuresi == 30 ? "selected" : "")>30 Dakika Sonra</option>
+                            <option value="60" @(Model.PopupTekrarSuresi == 60 ? "selected" : "")>1 Saat Sonra</option>
+                            <option value="360" @(Model.PopupTekrarSuresi == 360 ? "selected" : "")>6 Saat Sonra</option>
+                            <option value="720" @(Model.PopupTekrarSuresi == 720 ? "selected" : "")>12 Saat Sonra</option>
+                            <option value="1440" @(Model.PopupTekrarSuresi == 1440 || Model.PopupTekrarSuresi == null ? "selected" : "")>24 Saat Sonra Gelsin (Günde 1 Kez)</option>
+                            <option value="10080" @(Model.PopupTekrarSuresi == 10080 ? "selected" : "")>1 Hafta Sonra Gelsin</option>
+                        </select>
+                        <small class="text-muted">Kapatıldıktan sonra ne kadar süre bir daha çıkmasın?</small>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-dark btn-lg">
+                            <i class="fas fa-save me-2"></i> Ayarları Kaydet
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- PREVIEW AREA -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0"><i class="fas fa-eye me-2"></i> Önizleme</h5>
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center" style="background: url('/Content/Images/pattern.png'); min-height: 400px;">
+                
+                <!-- Mockup of the Modal Content -->
+                <div class="card border-0 shadow-lg text-white" style="width: 100%; max-width: 400px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
+                    <div class="card-header border-0 text-end">
+                        <button type="button" class="btn-close btn-close-white"></button>
+                    </div>
+                    <div class="card-body text-center p-4 pt-0">
+                         <div class="mb-3">
+                             <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">FIRSAT</span>
+                        </div>
+                        <h3 class="fw-bold mb-3 text-white" id="previewTitle">
+                            @(Model.PopupBaslik ?? "Başlık Buraya Gelecek")
+                        </h3>
+                        <div class="lead opacity-75 mb-4 small" id="previewContent">
+                            @Html.Raw(Model.PopupIcerik ?? "İçerik buraya gelecek...")
+                        </div>
+                        <div class="d-grid gap-2">
+                             <button class="btn btn-warning fw-bold rounded-pill text-uppercase">Hemen Fırsatı Yakala</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="card-footer text-muted small">
+                * Bu sadece görsel bir önizlemedir. Gerçek görünüm site temasına göre değişebilir.
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <!-- CKEditor 5 CDN -->
+    <script src="https://cdn.ckeditor.com/ckeditor5/38.0.1/classic/ckeditor.js"></script>
+    <script>
+        let editorInstance;
+
+        ClassicEditor
+            .create(document.querySelector('#editor'), {
+                toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', '|', 'insertTable', 'undo', 'redo'],
+                language: 'tr'
+            })
+            .then(editor => {
+                editorInstance = editor;
+                editor.model.document.on('change:data', () => {
+                    document.getElementById('previewContent').innerHTML = editor.getData() || 'İçerik buraya gelecek...';
+                });
+            })
+            .catch(error => {
+                console.error(error);
+            });
+
+        $(function() {
+            // Live Preview for Title
+            $('#PopupBaslik').on('input', function() {
+                $('#previewTitle').text($(this).val() || 'Başlık Buraya Gelecek');
+            });
+
+            // Checkbox Text Toggle
+            $('input[name="PopupAktif"]').change(function() {
+                if($(this).is(':checked')) {
+                    $('#statusText').text('Şu an AKTİF (Ziyaretçilere gösteriliyor)').removeClass('text-muted').addClass('text-success fw-bold');
+                } else {
+                    $('#statusText').text('PASİF (Gizli)').removeClass('text-success fw-bold').addClass('text-muted');
+                }
+            });
+        });
+    </script>
+}

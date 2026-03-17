@@ -1,0 +1,79 @@
+@using AIROSWEB.DAL.Db
+@model List<TblSeo>
+@{
+    ViewBag.Title = "SEO Ayarları";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">SEO Y&#246;netimi</h4>
+        <a href="@Url.Action("Create", "Seo")" class="btn btn-light text-primary btn-sm fw-bold">
+            <i class="fas fa-plus me-1"></i> Yeni Kay&#305;t
+        </a>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover table-bordered align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Sayfa Ad&#305;</th>
+                    <th>Ba&#351;l&#305;k (Title)</th>
+                    <th>A&#231;&#305;klama (Description)</th>
+                    <th>&#304;&#351;lem</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr id="row_@item.Id">
+                        <td><strong>@item.SayfaAdi</strong></td>
+                        <td>@item.Title</td>
+                        <td>@(item.Description?.Length > 50 ? item.Description.Substring(0, 50) + "..." : item.Description)</td>
+                        <td>
+                            <a href="@Url.Action("Edit", "Seo", new { id = item.Id })" class="btn btn-warning btn-sm text-white"><i class="fas fa-edit"></i> D&#252;zenle</a>
+                            <button class="btn btn-danger btn-sm delete-seo" data-id="@item.Id"><i class="fas fa-trash"></i> Sil</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    $(document).on('click', '.delete-seo', function () {
+        var id = $(this).data('id');
+        Swal.fire({
+            title: 'Emin misiniz?',
+            text: "Bu SEO kayd\u0131 silinecek!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Evet, Sil!',
+            cancelButtonText: '&#304;ptal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    type: "POST",
+                    url: "/Admin/Seo/Delete/" + id,
+                    success: function (response) {
+                        if (response.success) {
+                            Swal.fire(
+                                'Silindi!',
+                                'Kay\u0131t ba&#351;ar&#305;yla silindi.',
+                                'success'
+                            );
+                            $("#row_" + id).fadeOut();
+                        } else {
+                            Swal.fire('Hata!', 'Bir sorun olu&#351;tu.', 'error');
+                        }
+                    },
+                    error: function () {
+                        Swal.fire('Hata!', 'Sunucu hatas&#305;.', 'error');
+                    }
+                });
+            }
+        })
+    });
+</script>

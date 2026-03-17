@@ -1,0 +1,507 @@
+@model AIROSWEB.DAL.Db.TblAyarlar
+@{
+    ViewBag.Title = "Site Ayarları";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="fas fa-check-circle"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <h4 class="mb-0"><i class="fas fa-cogs"></i> Site Genel Ayarları</h4>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm("Index", "Ayarlar", FormMethod.Post, new { @class = "needs-validation" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.Id)
+
+            <!-- Tabs Navigation -->
+            <ul class="nav nav-tabs mb-4" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="genel-tab" data-bs-toggle="tab" data-bs-target="#genel" type="button">
+                        <i class="fas fa-info-circle"></i> Genel Bilgiler
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="logo-tab" data-bs-toggle="tab" data-bs-target="#logo" type="button">
+                        <i class="fas fa-image"></i> Logo & Görsel
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="iletisim-tab" data-bs-toggle="tab" data-bs-target="#iletisim" type="button">
+                        <i class="fas fa-phone"></i> İletişim
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="sosyal-tab" data-bs-toggle="tab" data-bs-target="#sosyal" type="button">
+                        <i class="fas fa-share-alt"></i> Sosyal Medya
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="diger-tab" data-bs-toggle="tab" data-bs-target="#diger" type="button">
+                        <i class="fas fa-search"></i> SEO & PWA
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="pazarlama-tab" data-bs-toggle="tab" data-bs-target="#pazarlama" type="button">
+                        <i class="fas fa-bullhorn"></i> Pazarlama
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="kodlar-tab" data-bs-toggle="tab" data-bs-target="#kodlar" type="button">
+                        <i class="fas fa-code"></i> Özel Kodlar
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="teknik-tab" data-bs-toggle="tab" data-bs-target="#teknik" type="button">
+                        <i class="fas fa-tools"></i> Sistem & Teknik
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="gelismis-tab" data-bs-toggle="tab" data-bs-target="#gelismis" type="button">
+                        <i class="fas fa-flask"></i> Gelişmiş Ayarlar
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Tabs Content -->
+            <div class="tab-content">
+                <!-- ... existing tabs (Genel, Logo, Iletisim, Sosyal, Diger, Gelismis) ... -->
+                @* Not: Diğer tab içerikleri yukarıda tanımlıydı, ben yeni eklenenleri buraya ekliyorum. 
+                   Normalde hepsini birleştirirdim ama dosya çok büyük olduğu için parçalı gidiyorum. *@
+
+                @* PAZARLAMA *@
+                <div class="tab-pane fade" id="pazarlama" role="tabpanel">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold"><i class="fab fa-whatsapp text-success"></i> WhatsApp Karşılama Mesajı</label>
+                            @Html.TextBoxFor(m => m.WhatsAppMesaj, new { @class = "form-control", placeholder = "Merhaba, bir hizmet hakkında bilgi almak istiyorum." })
+                            <small class="text-muted">Müşteri butona tıkladığında otomatik yazılacak olan ilk mesaj.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold"><i class="fab fa-instagram text-danger"></i> Instagram Access Token</label>
+                            @Html.TextBoxFor(m => m.InstagramToken, new { @class = "form-control", placeholder = "IGQVJ..." })
+                            <small class="text-muted">Instagram feed çekmek için gereken API token.</small>
+                        </div>
+                    </div>
+                </div>
+
+                @* ÖZEL KODLAR *@
+                <div class="tab-pane fade" id="kodlar" role="tabpanel">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Header Kodları (&lt;head&gt; içine)</label>
+                            @Html.TextAreaFor(m => m.HeaderKod, new { @class = "form-control code-editor", rows = 8, placeholder = "Meta taglar, CSS linkleri, Analytics scriptleri..." })
+                            <small class="text-muted">Bu kodlar &lt;head&gt; etiketinin sonuna eklenir.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold"><i class="fas fa-comments text-success"></i> Canlı Destek Sistemi ve Footer Kodları</label>
+                            @Html.TextAreaFor(m => m.FooterKod, new { @class = "form-control code-editor", rows = 8, placeholder = "Tawk.to, JivoChat vb. Canlı destek scriptlerini buraya yapıştırın..." })
+                            <small class="text-muted">Bu alana yapıştırdığınız Canlı Destek kodları &lt;/body&gt; kapanış etiketinin hemen öncesine otomatik eklenir.</small>
+                        </div>
+                    </div>
+                </div>
+
+                @* SİSTEM & TEKNİK *@
+                <div class="tab-pane fade" id="teknik" role="tabpanel">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="card border-danger">
+                                <div class="card-header bg-danger text-white">
+                                    <i class="fas fa-exclamation-triangle"></i> Bakım Modu (Bakım Var)
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-check form-switch mb-3 mt-2">
+                                        @Html.CheckBox("BakimModu", Model.BakimModu, new { @class = "form-check-input", role = "switch" })
+                                        <label class="form-check-label fw-bold">Siteyi Bakım Moduna Al</label>
+                                    </div>
+                                    <label class="form-label fw-bold">Bakım Mesajı</label>
+                                    @Html.TextBoxFor(m => m.BakimMesaji, new { @class = "form-control", placeholder = "Sizlere daha iyi hizmet verebilmek için çalışıyoruz..." })
+                                    <small class="text-muted">Bakım modu açıkken ziyaretçilerin göreceği kısa metin.</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <i class="fas fa-envelope"></i> E-Bülten Yönetimi
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-check form-switch mb-3 mt-2">
+                                        @Html.CheckBox("NewsletterAktif", Model.NewsletterAktif, new { @class = "form-check-input", role = "switch" })
+                                        <label class="form-check-label fw-bold">E-Bülten Aboneliğini Aktif Et</label>
+                                    </div>
+                                    <p class="small text-muted mb-0">Ziyaretçilerin e-posta bırakmasını sağlar.</p>
+                                    <a href="/Admin/Newsletter" class="btn btn-outline-primary btn-sm mt-2">
+                                        <i class="fas fa-users"></i> Aboneleri Görüntüle
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Genel Bilgiler -->
+                <div class="tab-pane fade show active" id="genel" role="tabpanel">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Site Başlığı</label>
+                            @Html.TextBoxFor(m => m.SiteBaslik, new { @class = "form-control", placeholder = "AIROS Teknik Servis" })
+                            <small class="text-muted">Tarayıcı sekmesinde ve arama motorlarında görünecek isim</small>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Footer Açıklaması (Editör)</label>
+                            @Html.TextAreaFor(m => m.FooterAciklama, new { @class = "form-control", id = "footer_editor" })
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Logo & Görsel -->
+                <div class="tab-pane fade" id="logo" role="tabpanel">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Header Logo</label>
+                            <div class="input-group">
+                                @Html.TextBoxFor(m => m.LogoYolu, new { @class = "form-control", id = "LogoYolu", placeholder = "/Uploads/logo.png" })
+                                <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('logoUpload').click()">
+                                    <i class="fas fa-upload"></i> Seç
+                                </button>
+                                <a href="@Url.Action("Index", "Upload")" target="_blank" class="btn btn-outline-info">
+                                    <i class="fas fa-images"></i>
+                                </a>
+                            </div>
+                            <input type="file" id="logoUpload" accept="image/*" style="display:none;" onchange="uploadLogo(this, 'LogoYolu')" />
+                            @if (!string.IsNullOrEmpty(Model.LogoYolu))
+                            {
+                                <div class="mt-2">
+                                    <img src="@Model.LogoYolu" alt="Logo" class="img-thumbnail" style="max-height: 100px;" />
+                                </div>
+                            }
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Footer Logo</label>
+                            <div class="input-group">
+                                @Html.TextBoxFor(m => m.FooterLogoYolu, new { @class = "form-control", id = "FooterLogoYolu", placeholder = "/Uploads/footer-logo.png" })
+                                <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('footerLogoUpload').click()">
+                                    <i class="fas fa-upload"></i> Seç
+                                </button>
+                                <a href="@Url.Action("Index", "Upload")" target="_blank" class="btn btn-outline-info">
+                                    <i class="fas fa-images"></i>
+                                </a>
+                            </div>
+                            <input type="file" id="footerLogoUpload" accept="image/*" style="display:none;" onchange="uploadLogo(this, 'FooterLogoYolu')" />
+                            @if (!string.IsNullOrEmpty(Model.FooterLogoYolu))
+                            {
+                                <div class="mt-2">
+                                    <img src="@Model.FooterLogoYolu" alt="Footer Logo" class="img-thumbnail" style="max-height: 100px;" />
+                                </div>
+                            }
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Favicon (16x16 veya 32x32 .ico/.png)</label>
+                            <div class="input-group">
+                                @Html.TextBoxFor(m => m.FaviconYolu, new { @class = "form-control", id = "FaviconYolu", placeholder = "/Uploads/favicon.ico" })
+                                <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('faviconUpload').click()">
+                                    <i class="fas fa-upload"></i> Seç
+                                </button>
+                                <a href="@Url.Action("Index", "Upload")" target="_blank" class="btn btn-outline-info">
+                                    <i class="fas fa-images"></i>
+                                </a>
+                            </div>
+                            <input type="file" id="faviconUpload" accept="image/*" style="display:none;" onchange="uploadLogo(this, 'FaviconYolu')" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- İletişim -->
+                <div class="tab-pane fade" id="iletisim" role="tabpanel">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Telefon 1</label>
+                            @Html.TextBoxFor(m => m.Telefon, new { @class = "form-control", placeholder = "0501 002 25 16" })
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Telefon 2 (Opsiyonel)</label>
+                            @Html.TextBoxFor(m => m.Telefon2, new { @class = "form-control", placeholder = "0224 123 45 67" })
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">WhatsApp</label>
+                            @Html.TextBoxFor(m => m.WhatsApp, new { @class = "form-control", placeholder = "905010022516" })
+                            <small class="text-muted">Ülke kodu ile birlikte, boşluksuz</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">E-Posta</label>
+                            @Html.TextBoxFor(m => m.Email, new { @class = "form-control", type = "email", placeholder = "info@airos.com.tr" })
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Adres</label>
+                            @Html.TextAreaFor(m => m.Adres, new { @class = "form-control", rows = 2, placeholder = "Nilüfer, Bursa" })
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Harita Embed URL</label>
+                            @Html.TextAreaFor(m => m.HaritaEmbed, new { @class = "form-control", rows = 2, placeholder = "https://www.google.com/maps/embed?pb=..." })
+                            <small class="text-muted">Google Maps'ten "Haritayı Paylaş > Haritayı Göm" seçeneğinden iframe src linkini kopyalayın</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Çalışma Günleri</label>
+                            @Html.TextBoxFor(m => m.CalismaGunleri, new { @class = "form-control", placeholder = "Pazartesi - Cumartesi" })
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Çalışma Saatleri</label>
+                            @Html.TextBoxFor(m => m.CalismaSaatleri, new { @class = "form-control", placeholder = "09:00 - 18:00" })
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sosyal Medya -->
+                <div class="tab-pane fade" id="sosyal" role="tabpanel">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold"><i class="fab fa-facebook text-primary"></i> Facebook</label>
+                            @Html.TextBoxFor(m => m.Facebook, new { @class = "form-control", placeholder = "https://facebook.com/airos" })
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold"><i class="fab fa-instagram text-danger"></i> Instagram</label>
+                            @Html.TextBoxFor(m => m.Instagram, new { @class = "form-control", placeholder = "https://instagram.com/airos" })
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold"><i class="fab fa-twitter text-info"></i> Twitter</label>
+                            @Html.TextBoxFor(m => m.Twitter, new { @class = "form-control", placeholder = "https://twitter.com/airos" })
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold"><i class="fab fa-linkedin text-primary"></i> LinkedIn</label>
+                            @Html.TextBoxFor(m => m.LinkedIn, new { @class = "form-control", placeholder = "https://linkedin.com/company/airos" })
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold"><i class="fab fa-youtube text-danger"></i> YouTube</label>
+                            @Html.TextBoxFor(m => m.YouTube, new { @class = "form-control", placeholder = "https://youtube.com/@airos" })
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Diğer -->
+                <div class="tab-pane fade" id="diger" role="tabpanel">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Google Analytics ID</label>
+                            @Html.TextBoxFor(m => m.GoogleAnalyticsId, new { @class = "form-control", placeholder = "G-XXXXXXXXXX" })
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Google Search Console Kodu</label>
+                            @Html.TextBoxFor(m => m.GoogleVerificationCode, new { @class = "form-control", placeholder = "Meta tag içeriği..." })
+                             <small class="text-muted">Örn: content="XXXXXXXXX" kısmını yapıştırın</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">PWA Uygulama Kısa Adı</label>
+                            @Html.TextBoxFor(m => m.PwaAppShortName, new { @class = "form-control", placeholder = "AIROS" })
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">PWA Tema Rengi (Hex)</label>
+                            @Html.TextBoxFor(m => m.PwaThemeColor, new { @class = "form-control", type = "color" })
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gelişmiş -->
+                <div class="tab-pane fade" id="gelismis" role="tabpanel">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="card bg-light border-0">
+                                <div class="card-body">
+                                    <h5 class="fw-bold mb-3"><i class="fas fa-mobile-alt text-primary me-2"></i>Mobil Yapışkan Bar</h5>
+                                    <div class="form-check form-switch mb-3">
+                                        @Html.CheckBox("StickyBarAktif", Model.StickyBarAktif ?? false, new { @class = "form-check-input", role = "switch" })
+                                        <label class="form-check-label fw-bold">Mobilde "Hemen Ara" Çubuğunu Aktif Et</label>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Bar Metni</label>
+                                        @Html.TextBoxFor(m => m.StickyBarMetin, new { @class = "form-control", placeholder = "7/24 Acil Servis & Destek" })
+                                        <small class="text-muted mb-3 d-block">Butonun yanında görünecek kısa metin</small>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <label class="form-label fw-bold small"><i class="far fa-clock"></i> Başlangıç Saati</label>
+                                                @Html.TextBoxFor(m => m.StickyBarBaslangic, new { @class = "form-control form-control-sm", type="time" })
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="form-label fw-bold small"><i class="far fa-clock"></i> Bitiş Saati</label>
+                                                @Html.TextBoxFor(m => m.StickyBarBitis, new { @class = "form-control form-control-sm", type="time" })
+                                            </div>
+                                        </div>
+                                        <small class="text-info mt-2 d-block"><i class="fas fa-info-circle"></i> Saatleri boş bırakırsanız barımız <strong>7/24</strong> görünür.</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light border-0">
+                                <div class="card-body">
+                                    <h5 class="fw-bold mb-3"><i class="fab fa-google text-danger me-2"></i>Google Yorum Entegrasyonu</h5>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Google Maps Yer ID (Place ID)</label>
+                                        @Html.TextBoxFor(m => m.GoogleMapsYorumId, new { @class = "form-control", placeholder = "ChIJs1..." })
+                                        <small class="text-muted">Google İşletme profilinizin yorumlarını çekmek için gereken ID. Boş bırakırsanız sadece buton görünür.</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="card bg-light border-0">
+                                <div class="card-body">
+                                    <h5 class="fw-bold mb-3"><i class="fas fa-sign-out-alt text-warning me-2"></i>Çıkış Niyeti Pop-up (Exit Intent)</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-check form-switch mb-3 mt-2">
+                                                @Html.CheckBox("ExitPopupAktif", Model.ExitPopupAktif ?? false, new { @class = "form-check-input", role = "switch" })
+                                                <label class="form-check-label fw-bold">"Gitmeden Önce" Pop-up'ını Aktif Et</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mt-3">
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold text-info"><i class="far fa-clock"></i> Gösterim Gecikmesi (Saniye)</label>
+                                                <select name="ExitPopupGecikme" class="form-select border-info">
+                                                    <option value="0" @(Model.ExitPopupGecikme == 0 ? "selected" : "")>Hemen Göster (0 Saniye)</option>
+                                                    <option value="3" @(Model.ExitPopupGecikme == 3 ? "selected" : "")>3 Saniye Sonra</option>
+                                                    <option value="5" @(Model.ExitPopupGecikme == 5 || Model.ExitPopupGecikme == null ? "selected" : "")>5 Saniye Sonra</option>
+                                                    <option value="10" @(Model.ExitPopupGecikme == 10 ? "selected" : "")>10 Saniye Sonra</option>
+                                                    <option value="15" @(Model.ExitPopupGecikme == 15 ? "selected" : "")>15 Saniye Sonra</option>
+                                                    <option value="30" @(Model.ExitPopupGecikme == 30 ? "selected" : "")>30 Saniye Sonra</option>
+                                                </select>
+                                                <small class="text-muted">Kullanıcı siteye girdikten kaç saniye sonra kampanya penceresi açılsın?</small>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold text-success"><i class="fas fa-redo"></i> Tekrar Gösterim Süresi</label>
+                                                <select name="ExitPopupTekrarSuresi" class="form-select border-success">
+                                                    <option value="1" @(Model.ExitPopupTekrarSuresi == 1 ? "selected" : "")>1 Dakika Sonra</option>
+                                                    <option value="5" @(Model.ExitPopupTekrarSuresi == 5 ? "selected" : "")>5 Dakika Sonra</option>
+                                                    <option value="10" @(Model.ExitPopupTekrarSuresi == 10 || Model.ExitPopupTekrarSuresi == null ? "selected" : "")>10 Dakika Sonra (Önerilen)</option>
+                                                    <option value="15" @(Model.ExitPopupTekrarSuresi == 15 ? "selected" : "")>15 Dakika Sonra</option>
+                                                    <option value="30" @(Model.ExitPopupTekrarSuresi == 30 ? "selected" : "")>30 Dakika Sonra</option>
+                                                    <option value="60" @(Model.ExitPopupTekrarSuresi == 60 ? "selected" : "")>1 Saat Sonra</option>
+                                                    <option value="360" @(Model.ExitPopupTekrarSuresi == 360 ? "selected" : "")>6 Saat Sonra</option>
+                                                    <option value="720" @(Model.ExitPopupTekrarSuresi == 720 ? "selected" : "")>12 Saat Sonra</option>
+                                                    <option value="1440" @(Model.ExitPopupTekrarSuresi == 1440 ? "selected" : "")>24 Saat Sonra Gelsin (Günde 1 Kez)</option>
+                                                </select>
+                                                <small class="text-muted">Kapatıldıktan sonra ne kadar süre bir daha çıkmasın?</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="card bg-light border-0">
+                                <div class="card-body">
+                                    <h5 class="fw-bold mb-3"><i class="fas fa-bullhorn text-success me-2"></i>Sosyal Kanıt (Sol Alt Bildirimler) Ayarları</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold text-info"><i class="far fa-clock"></i> İlk Çıkma Gecikmesi (Saniye)</label>
+                                                <select name="SosyalKanitGecikme" class="form-select border-info">
+                                                    <option value="2" @(Model.SosyalKanitGecikme == 2 || Model.SosyalKanitGecikme == null ? "selected" : "")>2 Saniye Sonra</option>
+                                                    <option value="5" @(Model.SosyalKanitGecikme == 5 ? "selected" : "")>5 Saniye Sonra</option>
+                                                    <option value="10" @(Model.SosyalKanitGecikme == 10 ? "selected" : "")>10 Saniye Sonra</option>
+                                                    <option value="15" @(Model.SosyalKanitGecikme == 15 ? "selected" : "")>15 Saniye Sonra</option>
+                                                    <option value="30" @(Model.SosyalKanitGecikme == 30 ? "selected" : "")>30 Saniye Sonra</option>
+                                                </select>
+                                                <small class="text-muted">Kullanıcı siteye girdikten kaç saniye sonra ilk bildirim çıksın?</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold text-success"><i class="fas fa-redo"></i> Ard Arda Gösterim Sıklığı</label>
+                                                <select name="SosyalKanitTekrar" class="form-select border-success">
+                                                    <option value="10" @(Model.SosyalKanitTekrar == 10 ? "selected" : "")>Her 10 Saniyede Bir</option>
+                                                    <option value="15" @(Model.SosyalKanitTekrar == 15 || Model.SosyalKanitTekrar == null ? "selected" : "")>Her 15-25 Saniyede Bir (Önerilen)</option>
+                                                    <option value="30" @(Model.SosyalKanitTekrar == 30 ? "selected" : "")>Her 30 Saniyede Bir</option>
+                                                    <option value="60" @(Model.SosyalKanitTekrar == 60 ? "selected" : "")>Her 1 Dakikada Bir</option>
+                                                    <option value="120" @(Model.SosyalKanitTekrar == 120 ? "selected" : "")>Her 2 Dakikada Bir</option>
+                                                    <option value="300" @(Model.SosyalKanitTekrar == 300 ? "selected" : "")>Her 5 Dakikada Bir</option>
+                                                </select>
+                                                <small class="text-muted">Bir bildirim çıktıktan ne kadar süre sonra bir diğeri çıksın?</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4" />
+
+            <div class="text-end">
+                <button type="submit" class="btn btn-success btn-lg px-5">
+                    <i class="fas fa-save"></i> Tüm Ayarları Kaydet
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+@section scripts {
+    <!-- CKEditor 5 CDN -->
+    <script src="https://cdn.ckeditor.com/ckeditor5/38.0.1/classic/ckeditor.js"></script>
+    <script>
+        ClassicEditor
+            .create(document.querySelector('#footer_editor'), {
+                toolbar: ['bold', 'italic', 'link', 'undo', 'redo'],
+                language: 'tr'
+            })
+            .catch(error => {
+                console.error(error);
+            });
+
+        function uploadLogo(input, targetFieldId) {
+            if (input.files && input.files[0]) {
+                var formData = new FormData();
+                formData.append('file', input.files[0]);
+
+                var btn = input.previousElementSibling;
+                if (btn && btn.tagName === 'BUTTON') {
+                    var originalHtml = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Yükleniyor...';
+                    btn.disabled = true;
+                }
+
+                fetch('@Url.Action("Upload", "UploadSafe")', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                })
+                .then(response => response.text())
+                .then(html => {
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(html, 'text/html');
+                    var pathInput = doc.querySelector('input[type="text"][readonly]');
+                    
+                    if (pathInput) {
+                        document.getElementById(targetFieldId).value = pathInput.value;
+                        alert('Resim başarıyla yüklendi!');
+                        location.reload(); // Önizlemeyi göstermek için sayfayı yenile
+                    }
+                    
+                    if (btn) {
+                        btn.innerHTML = originalHtml;
+                        btn.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    alert('Yükleme sırasında hata oluştu: ' + error);
+                    if (btn) {
+                        btn.innerHTML = originalHtml;
+                        btn.disabled = false;
+                    }
+                });
+            }
+        }
+    </script>
+}

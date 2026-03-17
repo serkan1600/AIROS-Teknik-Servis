@@ -1,0 +1,113 @@
+@model AIROSWEB.DAL.Db.TblRandevular
+@{
+    ViewBag.Title = "Randevu Düzenle";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center bg-white">
+                <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-edit me-2"></i> Randevu Bilgilerini Düzenle</h6>
+                <a href="@Url.Action("Index")" class="btn btn-sm btn-secondary font-weight-bold">
+                    <i class="fas fa-arrow-left me-1"></i> Geri Dön
+                </a>
+            </div>
+            <div class="card-body">
+                @using (Html.BeginForm("Edit", "Randevular", FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.HiddenFor(m => m.Id)
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase">Müşteri Ad Soyad</label>
+                            @Html.TextBoxFor(m => m.AdSoyad, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.AdSoyad, "", new { @class = "text-danger small" })
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase">Telefon</label>
+                            @Html.TextBoxFor(m => m.Telefon, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(m => m.Telefon, "", new { @class = "text-danger small" })
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase">E-Posta</label>
+                            @Html.TextBoxFor(m => m.Email, new { @class = "form-control", type = "email" })
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase">Hizmet Türü</label>
+                            @Html.TextBoxFor(m => m.HizmetAdi, new { @class = "form-control" })
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase">Randevu Tarihi</label>
+                            @Html.TextBoxFor(m => m.RandevuTarihi, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase">Randevu Saati</label>
+                            @Html.TextBoxFor(m => m.RandevuSaati, new { @class = "form-control", placeholder = "09:00 - 12:00" })
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase">Adres</label>
+                        @Html.TextAreaFor(m => m.Adres, new { @class = "form-control", rows = "3" })
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase">Müşteri Notu</label>
+                        <textarea class="form-control bg-light" rows="3" readonly>@Model.Mesaj</textarea>
+                    </div>
+
+                    <hr />
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase">Randevu Durumu</label>
+                            @Html.DropDownListFor(m => m.Durum, new SelectList(new[] { "Hızlı Teklif", "Beklemede", "Onaylandı", "Tamamlandı", "İptal" }, Model.Durum), new { @class = "form-select" })
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase">Yönetici Notu</label>
+                            @Html.TextAreaFor(m => m.YoneticiNotu, new { @class = "form-control", rows = "2", placeholder = "Müşteriye bilgi veya dahili not..." })
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase text-info"><i class="fas fa-user-cog"></i> Atanan Teknisyen</label>
+                            <select name="TeknisyenId" class="form-select border-info">
+                                <option value="">-- Teknisyen Seçiniz (Yok) --</option>
+                                @if (ViewBag.Teknisyenler != null)
+                                {
+                                    foreach (var t in (List<AIROSWEB.DAL.Db.TblAdmin>)ViewBag.Teknisyenler)
+                                    {
+                                        <option value="@t.Id" @(Model.TeknisyenId == t.Id ? "selected" : "")>Ustabaşı: @t.KullaniciAdi</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase text-success"><i class="fas fa-lira-sign"></i> Alınan Ücret (TL)</label>
+                            @Html.TextBoxFor(m => m.AlinanUcret, new { @class = "form-control border-success", placeholder = "Örn: 1500" })
+                        </div>
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold shadow-sm">
+                            <i class="fas fa-save me-2"></i> DEĞİŞİKLİKLERİ KAYDET
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

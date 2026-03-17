@@ -1,0 +1,40 @@
+@model AIROSWEB.DAL.Db.TblSeo
+@{
+    ViewBag.Title = "SEO Düzenle";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-warning text-dark">
+        <h4 class="mb-0"><i class="fas fa-edit"></i> SEO Düzenle: @Model.SayfaAdi</h4>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm("Edit", "Seo", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.Id)
+            @Html.HiddenFor(m => m.SayfaAdi)
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Sayfa Başlığı (Title)</label>
+                @Html.TextBoxFor(m => m.Title, new { @class = "form-control", required = "required" })
+                <small class="text-muted">Google aramalarında görünen mavi başlıktır (Max 60 karakter önerilir).</small>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Sayfa Açıklaması (Description)</label>
+                @Html.TextAreaFor(m => m.Description, new { @class = "form-control", rows = 4 })
+                <small class="text-muted">Arama sonuçlarında başlığın altında görünen kısa özet (Max 160 karakter önerilir).</small>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Anahtar Kelimeler (Keywords)</label>
+                @Html.TextBoxFor(m => m.Keywords, new { @class = "form-control", placeholder = "kombi servisi, klima tamiri, bursa teknik servis" })
+                <small class="text-muted">Virgül ile ayırarak yazın.</small>
+            </div>
+            
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Güncelle</button>
+                <a href="/Admin/Seo/Index" class="btn btn-secondary">İptal</a>
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,157 @@
+@model AIROSWEB.DAL.Db.TblMesajlar
+@{
+    ViewBag.Title = "Mesaj Detayı";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="fas fa-check-circle"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fas fa-envelope-open"></i> Mesaj Detayı</h4>
+                <a href="@Url.Action("Index")" class="btn btn-sm btn-light">
+                    <i class="fas fa-arrow-left"></i> Geri
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="text-muted small">Gönderen</label>
+                        <h5 class="mb-0">@Model.AdSoyad</h5>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <label class="text-muted small">Tarih</label>
+                        <h6 class="mb-0">@Model.Tarih.ToString("dd MMMM yyyy, HH:mm")</h6>
+                    </div>
+                </div>
+
+                <hr />
+
+                <div class="row mb-3">
+                    @if (!string.IsNullOrEmpty(Model.Email))
+                    {
+                        <div class="col-md-6 mb-2">
+                            <label class="text-muted small"><i class="fas fa-envelope"></i> E-posta</label>
+                            <p class="mb-0">
+                                <a href="mailto:@Model.Email">@Model.Email</a>
+                            </p>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Telefon))
+                    {
+                        <div class="col-md-6 mb-2">
+                            <label class="text-muted small"><i class="fas fa-phone"></i> Telefon</label>
+                            <p class="mb-0">
+                                <a href="tel:@Model.Telefon">@Model.Telefon</a>
+                            </p>
+                        </div>
+                    }
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.Konu))
+                {
+                    <div class="mb-3">
+                        <label class="text-muted small">Konu</label>
+                        <h6>@Model.Konu</h6>
+                    </div>
+                }
+
+                <div class="mb-3">
+                    <label class="text-muted small">Mesaj</label>
+                    <div class="border rounded p-3 bg-light">
+                        @Model.Mesaj
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    @using (Html.BeginForm("ToggleYanitlandi", "Mesajlar", new { id = Model.Id }, FormMethod.Post, new { @class = "d-inline" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        if (Model.Yanitlandi)
+                        {
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-undo"></i> Yanıtlanmadı Olarak İşaretle
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check"></i> Yanıtlandı Olarak İşaretle
+                            </button>
+                        }
+                    }
+
+                    @using (Html.BeginForm("Delete", "Mesajlar", new { id = Model.Id }, FormMethod.Post, new { @class = "d-inline", onsubmit = "return confirm('Bu mesajı silmek istediğinize emin misiniz?');" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Sil
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Durum</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="small text-muted">Okunma Durumu</label>
+                    <p class="mb-0">
+                        @if (Model.Okundu)
+                        {
+                            <span class="badge bg-success">Okundu</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning">Okunmadı</span>
+                        }
+                    </p>
+                </div>
+                <div>
+                    <label class="small text-muted">Yanıt Durumu</label>
+                    <p class="mb-0">
+                        @if (Model.Yanitlandi)
+                        {
+                            <span class="badge bg-success">Yanıtlandı</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Bekliyor</span>
+                        }
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-sticky-note"></i> Yönetici Notu</h5>
+            </div>
+            <div class="card-body">
+                @using (Html.BeginForm("SaveNote", "Mesajlar", new { id = Model.Id }, FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <textarea name="yoneticiNotu" class="form-control" rows="5" placeholder="Bu mesaj hakkında notlarınızı buraya yazabilirsiniz...">@Model.YoneticiNotu</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-info w-100">
+                        <i class="fas fa-save"></i> Notu Kaydet
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+</div>

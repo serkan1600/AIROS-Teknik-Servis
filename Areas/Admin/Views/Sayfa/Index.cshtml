@@ -1,0 +1,121 @@
+@using AIROSWEB.DAL.Db
+@model List<TblSayfalar>
+@{
+    ViewBag.Title = "Sayfa Yönetimi";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <div>
+            <h4 class="mb-0"><i class="fas fa-sort-amount-down me-2"></i>Menü Sıralama</h4>
+            <small class="text-white-50">Sürükle-bırak yaparak menü sırasını değiştirebilirsiniz.</small>
+        </div>
+        <a href="/Admin/Sayfa/Create" class="btn btn-light text-primary btn-sm"><i class="fas fa-plus"></i> Yeni Sayfa</a>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0" id="sortable-table">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 50px;">#</th>
+                    <th>ID</th>
+                    <th>Başlık</th>
+                    <th>Link</th>
+                    <th>Konum</th>
+                    <th>Durum</th>
+                    <th class="text-end">İşlemler</th>
+                </tr>
+            </thead>
+            <tbody id="sortable-body">
+                @foreach (var item in Model)
+                {
+                    <tr data-id="@item.Id" style="cursor: move;">
+                        <td class="text-muted"><i class="fas fa-grip-vertical"></i></td>
+                        <td>@item.Id</td>
+                        <td><strong>@item.Baslik</strong></td>
+                        <td><small class="text-primary">@item.Link</small></td>
+                        <td>
+                            @if (item.Konum == "Header") { <span class="badge bg-info">Header</span> }
+                            else if (item.Konum == "Footer") { <span class="badge bg-secondary">Footer</span> }
+                            else { <span class="badge bg-success">Her İkisi</span> }
+                        </td>
+                        <td>
+                            @using (Html.BeginForm("DurumDegistir", "Sayfa", new { id = item.Id }, FormMethod.Post, new { @class = "d-inline toggle-form" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <div class="form-check form-switch d-inline-block">
+                                    <input class="form-check-input status-toggle" type="checkbox" role="switch" @(item.AktifMi ? "checked" : "") onchange="this.form.submit()">
+                                    <label class="form-check-label small @(item.AktifMi ? "text-success fw-bold" : "text-danger")">
+                                        @(item.AktifMi ? "Aktif" : "Pasif")
+                                    </label>
+                                </div>
+                            }
+                        </td>
+                        <td class="text-end">
+                            <div class="btn-group">
+                                <a href="/Admin/Sayfa/Edit/@item.Id" class="btn btn-light btn-sm text-warning" title="Düzenle"><i class="fas fa-edit"></i></a>
+                                @using (Html.BeginForm("Delete", "Sayfa", new { id = item.Id }, FormMethod.Post, new { @class = "d-inline", onsubmit = "return confirm('Silmek istediğinize emin misiniz?');" }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-light btn-sm text-danger" title="Sil"><i class="fas fa-trash"></i></button>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const el = document.getElementById('sortable-body');
+            if (el) {
+                Sortable.create(el, {
+                    animation: 150,
+                    ghostClass: 'bg-light',
+                    onEnd: function () {
+                        const itemIds = Array.from(el.querySelectorAll('tr')).map(tr => tr.getAttribute('data-id'));
+                        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                        // MVC 5 için en güvenli yöntem: x-www-form-urlencoded
+                        const params = new URLSearchParams();
+                        params.append('__RequestVerificationToken', token);
+                        itemIds.forEach(id => params.append('itemIds', id));
+
+                        fetch('/Admin/Sayfa/UpdateOrder', {
+                            method: 'POST',
+                            body: params
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Sıralama Güncellendi',
+                                    toast: true,
+                                    position: 'top-end',
+                                    showConfirmButton: false,
+                                    timer: 2000
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Hata',
+                                    text: 'Sıralama güncellenemedi.'
+                                });
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Sıralama hatası:', err);
+                        });
+                    }
+                });
+            }
+        });
+    </script>
+}

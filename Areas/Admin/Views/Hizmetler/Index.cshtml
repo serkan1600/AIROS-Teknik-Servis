@@ -1,0 +1,95 @@
+@model List<AIROSWEB.DAL.Db.TblHizmetler>
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    ViewBag.Title = "Hizmetler";
+}
+
+<div class="row">
+    <div class="col-md-12 mb-3">
+        <h3 class="fw-bold">Hizmet Yönetimi</h3>
+         <a href="@Url.Action("Create", "Hizmetler")" class="btn btn-primary float-end"><i class="fas fa-plus"></i> Yeni Hizmet</a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Başlık</th>
+                    <th>Açıklama</th>
+                    <th>İkon</th>
+                    <th>Durum</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach(var item in Model)
+                {
+                    <tr id="row_@item.Id">
+                        <td>@item.Id</td>
+                        <td>@item.Baslik</td>
+                        <td>@(item.Aciklama != null && item.Aciklama.Length > 50 ? item.Aciklama.Substring(0, 50) + "..." : item.Aciklama)</td>
+                        <td><i class="@item.Ikon text-primary"></i> @item.Ikon</td>
+                        <td>
+                            @if(item.AktifMi == true)
+                            {
+                                <span class="badge bg-success">Aktif</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Pasif</span>
+                            }
+                        </td>
+                        <td>
+                             <a href="@Url.Action("Edit", "Hizmetler", new { id = item.Id })" class="btn btn-warning btn-sm text-white"><i class="fas fa-edit"></i></a>
+                             <button class="btn btn-danger btn-sm delete-btn" data-id="@item.Id"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    $(document).on('click', '.delete-btn', function () {
+        var id = $(this).data('id');
+        Swal.fire({
+            title: 'Emin misiniz?',
+            text: "Bu hizmet silinecek!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Evet, Sil!',
+            cancelButtonText: 'İptal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    type: "POST",
+                    url: "/Admin/Hizmetler/Delete/" + id,
+                    data: {
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            Swal.fire(
+                                'Silindi!',
+                                'Hizmet başarıyla silindi.',
+                                'success'
+                            );
+                            $("#row_" + id).fadeOut();
+                        } else {
+                            Swal.fire('Hata!', 'Bir sorun oluştu.', 'error');
+                        }
+                    },
+                    error: function () {
+                        Swal.fire('Hata!', 'Sunucu hatası.', 'error');
+                    }
+                });
+            }
+        })
+    });
+</script>

@@ -1,0 +1,128 @@
+@model List<AIROSWEB.DAL.Db.TblBlog>
+@{
+    ViewBag.Title = "Blog Yönetimi";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    var kategoriler = ViewBag.Kategoriler as List<AIROSWEB.DAL.Db.TblBlogKategori>;
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="fas fa-check-circle"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h4 class="mb-0"><i class="fas fa-blog"></i> Blog Yazıları</h4>
+        <div class="d-flex align-items-center">
+            @using (Html.BeginForm("SeedContent", "Blog", FormMethod.Post, new { @class = "d-inline me-2", onsubmit = "return confirm('Örnek SEO içerikleri yüklenecek. Daha önce yüklediyseniz tekrar yüklemeyin. Devam edilsin mi?')" }))
+            {
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-magic"></i> Örnek SEO İçerikleri
+                </button>
+            }
+            <a href="@Url.Action("Index", "BlogKategori")" class="btn btn-outline-light btn-sm me-2">
+                <i class="fas fa-folder"></i> Kategoriler
+            </a>
+            <a href="@Url.Action("Create")" class="btn btn-light text-primary fw-bold">
+                <i class="fas fa-plus"></i> Yeni Yazı Ekle
+            </a>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="80">Resim</th>
+                            <th>Başlık</th>
+                            <th width="150">Kategori</th>
+                            <th width="120">Yazar</th>
+                            <th width="120">Tarih</th>
+                            <th width="80">Görüntülenme</th>
+                            <th width="100">Durum</th>
+                            <th width="150">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            var kategori = kategoriler?.FirstOrDefault(k => k.Id == item.KategoriId);
+                            <tr>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.ResimYolu))
+                                    {
+                                        <img src="@item.ResimYolu" alt="@item.Baslik" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;" />
+                                    }
+                                    else
+                                    {
+                                        <div class="bg-light d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                            <i class="fas fa-image text-muted"></i>
+                                        </div>
+                                    }
+                                </td>
+                                <td>
+                                    <strong>@item.Baslik</strong>
+                                    <br />
+                                    <small class="text-muted">/@item.Slug</small>
+                                </td>
+                                <td>
+                                    @if (kategori != null)
+                                    {
+                                        <span class="badge bg-info">@kategori.KategoriAdi</span>
+                                    }
+                                </td>
+                                <td>@(item.Yazar ?? "-")</td>
+                                <td>
+                                    <small>@item.YayinTarihi.ToString("dd.MM.yyyy")</small>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-secondary">@item.GoruntulemeSayisi</span>
+                                </td>
+                                <td>
+                                    @if (item.AktifMi)
+                                    {
+                                        <span class="badge bg-success">Yayında</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning">Taslak</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="@Url.Action("Edit", new { id = item.Id })" class="btn btn-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        @using (Html.BeginForm("Delete", "Blog", new { id = item.Id }, FormMethod.Post, new { @class = "d-inline", onsubmit = "return confirm('Silmek istediğinize emin misiniz?');" }))
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-blog fa-4x text-muted mb-3"></i>
+                <p class="text-muted">Henüz blog yazısı bulunmuyor.</p>
+                <a href="@Url.Action("Create")" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> İlk Yazıyı Ekle
+                </a>
+            </div>
+        }
+    </div>
+</div>

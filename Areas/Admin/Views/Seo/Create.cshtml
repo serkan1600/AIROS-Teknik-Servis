@@ -1,0 +1,46 @@
+@model AIROSWEB.DAL.Db.TblSeo
+@{
+    ViewBag.Title = "Yeni SEO Kaydı Ekle";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-success text-white">
+        <h4 class="mb-0">Yeni SEO Kayd&#305; Ekle</h4>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm("Create", "Seo", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            <div class="mb-3">
+                <label class="form-label fw-bold">Sayfa Ad&#305;</label>
+                @Html.TextBoxFor(x => x.SayfaAdi, new { @class = "form-control", required="required", placeholder="Örn: Hizmetler, Iletisim" })
+                <small class="text-muted">Bu alana sayfan&#305;n teknik ismini yaz&#305;n&#305;z.</small>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Sayfa Ba&#351;l&#305;&#287;&#305; (Title)</label>
+                @Html.TextBoxFor(x => x.Title, new { @class = "form-control", required="required" })
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">A&#231;&#305;klama (Description)</label>
+                @Html.TextAreaFor(x => x.Description, new { @class = "form-control", rows=4 })
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Anahtar Kelimeler (Keywords)</label>
+                @Html.TextBoxFor(x => x.Keywords, new { @class = "form-control", placeholder = "kombi servisi, klima tamiri, bursa teknik servis" })
+            </div>
+
+
+
+            <button type="submit" class="btn btn-success text-white">
+                <i class="fas fa-save me-1"></i> Kaydet
+            </button>
+            <a href="@Url.Action("Index", "Seo")" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Vazge&#231;
+            </a>
+        }
+    </div>
+</div>

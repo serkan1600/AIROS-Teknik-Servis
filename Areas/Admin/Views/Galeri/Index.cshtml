@@ -1,0 +1,142 @@
+@model List<AIROSWEB.DAL.Db.TblGaleri>
+@{
+    ViewBag.Title = "Galeri / Uygulama Yönetimi";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-0 text-dark">Galeri & Uygulama Yönetimi</h3>
+        <p class="text-muted small mb-0">Web sitesinde görüntülenen uygulama görsellerini buradan yönetebilirsiniz.</p>
+    </div>
+    <a href="@Url.Action("Create")" class="btn btn-primary shadow-sm">
+        <i class="fas fa-plus-circle me-2"></i>Yeni Uygulama Ekle
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success border-0 shadow-sm alert-dismissible fade show mb-4">
+        <i class="fas fa-check-circle me-2"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row g-4">
+    @if (Model.Any())
+    {
+        foreach (var item in Model)
+        {
+            <div class="col-xl-3 col-lg-4 col-md-6">
+                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden gallery-admin-card">
+                    <!-- Image Wrapper -->
+                    <div class="position-relative">
+                        @if (!string.IsNullOrEmpty(item.ResimYolu))
+                        {
+                            if (item.ResimYolu.EndsWith(".mp4") || item.ResimYolu.EndsWith(".webm") || item.ResimYolu.EndsWith(".mov"))
+                            {
+                                <video src="@item.ResimYolu" class="card-img-top gallery-media-item" muted playsinline></video>
+                            }
+                            else
+                            {
+                                <img src="@item.ResimYolu" class="card-img-top gallery-media-item" alt="@item.Baslik" />
+                            }
+                        }
+                        else
+                        {
+                            <div class="bg-light d-flex align-items-center justify-content-center gallery-media-item">
+                                <i class="fas fa-image fa-3x text-muted opacity-25"></i>
+                            </div>
+                        }
+                        
+                        <!-- Quick Stats/Info Overlay -->
+                        <div class="position-absolute bottom-0 start-0 w-100 p-2 d-flex justify-content-between align-items-center bg-dark bg-opacity-50 text-white small">
+                             <span><i class="fas fa-sort me-1"></i>Sıra: @item.Sira</span>
+                             <span><i class="fas fa-calendar-alt me-1"></i>@(item.Tarih.HasValue ? item.Tarih.Value.ToShortDateString() : "-")</span>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="fw-bold text-dark mb-0 text-truncate" title="@item.Baslik">@item.Baslik</h6>
+                        </div>
+                        <p class="text-muted small mb-3 text-truncate-2" style="height: 36px;">@(item.Aciklama ?? "Açıklama girilmemiş.")</p>
+                        
+                        <div class="d-flex gap-1 mb-3">
+                            @if (!string.IsNullOrEmpty(item.Kategori))
+                            {
+                                <span class="badge bg-primary-subtle text-primary border border-primary px-2">@item.Kategori</span>
+                            }
+                            @if (!string.IsNullOrEmpty(item.Konum))
+                            {
+                                <span class="badge bg-light text-muted border px-2"><i class="fas fa-map-marker-alt me-1"></i>@item.Konum</span>
+                            }
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            @using (Html.BeginForm("DurumDegistir", "Galeri", new { id = item.Id }, FormMethod.Post, new { @class = "flex-fill" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm w-100 @(item.AktifMi ? "btn-success" : "btn-outline-danger") shadow-sm">
+                                    @if (item.AktifMi)
+                                    {
+                                        <i class="fas fa-check-circle me-1"></i><span>Aktif</span>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-times-circle me-1"></i><span>Pasif</span>
+                                    }
+                                </button>
+                            }
+                            <div class="btn-group">
+                                <a href="@Url.Action("Edit", new { id = item.Id })" class="btn btn-sm btn-warning text-white" title="Düzenle">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                @using (Html.BeginForm("Delete", "Galeri", new { id = item.Id }, FormMethod.Post, new { @class = "d-inline", onsubmit = "return confirm('Bu uygulamayı silmek istediğinize emin misiniz?');" }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-danger text-white border-start-0 rounded-start-0" title="Sil">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="col-12">
+            <div class="text-center py-5 bg-white rounded-4 shadow-sm">
+                <i class="fas fa-images fa-5x text-muted mb-3 opacity-25"></i>
+                <h4 class="text-muted">Henüz Uygulama Eklenmemiş</h4>
+                <p class="text-muted mb-4">Yeni bir çalışma ekleyerek vitrininizi oluşturmaya başlayın.</p>
+                <a href="@Url.Action("Create")" class="btn btn-primary px-4">
+                    <i class="fas fa-plus me-2"></i>İlk Uygulamayı Ekle
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .gallery-admin-card { transition: all 0.3s; }
+    .gallery-admin-card:hover { transform: translateY(-5px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important; }
+    .text-truncate-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .bg-primary-subtle { background-color: #e7f1ff; }
+    
+    /* Enforce strict size for all media types */
+    .gallery-media-item {
+        height: 220px;
+        width: 100%;
+        object-fit: cover;
+        object-position: center;
+    }
+</style>

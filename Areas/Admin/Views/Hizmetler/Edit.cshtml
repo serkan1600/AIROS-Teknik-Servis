@@ -1,0 +1,210 @@
+@model AIROSWEB.DAL.Db.TblHizmetler
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    ViewBag.Title = "Hizmet Düzenle";
+}
+
+<div class="card shadow-lg border-0 rounded-3">
+    <div class="card-header bg-gradient-primary text-white py-3">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-edit fa-2x me-3"></i>
+            <h4 class="mb-0 fw-bold">Hizmet Düzenle</h4>
+        </div>
+    </div>
+    <div class="card-body p-4 bg-light">
+        @using (Html.BeginForm("Edit", "Hizmetler", FormMethod.Post, new { @enctype = "multipart/form-data" }))
+        {
+            @Html.HiddenFor(x => x.Id)
+            @Html.AntiForgeryToken()
+            
+            <div class="row">
+                <!-- Sol Kolon: Temel Bilgiler -->
+                <div class="col-md-8">
+                    <div class="card bg-white shadow-sm mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold text-primary mb-3"><i class="fas fa-info-circle"></i> Genel Bilgiler</h5>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Başlık</label>
+                                @Html.TextBoxFor(x => x.Baslik, new { @class = "form-control form-control-lg", required="required", placeholder="Örn: Kombi Bakımı" })
+                            </div>
+
+                            <div class="mb-3">
+                                 <label class="form-label fw-bold">Özet Açıklama</label>
+                                 @Html.TextAreaFor(x => x.Aciklama, new { @class = "form-control", rows=3, placeholder="Anasayfada görünecek kısa açıklama..." })
+                            </div>
+
+                            <div class="mb-3">
+                                 <label class="form-label fw-bold">Detaylı İçerik (Editör)</label>
+                                 @Html.TextAreaFor(x => x.Icerik, new { @class = "form-control", id="editor" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sağ Kolon: Ayarlar & Medya -->
+                <div class="col-md-4">
+                    <div class="card bg-white shadow-sm mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold text-warning mb-3"><i class="fas fa-cogs"></i> Ayarlar</h5>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">İkon (FontAwesome)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="@Model.Ikon" id="iconPreview"></i></span>
+                                    @Html.TextBoxFor(x => x.Ikon, new { @class = "form-control", placeholder="fa fa-cogs", oninput="document.getElementById('iconPreview').className = this.value" })
+                                </div>
+                                <small class="text-muted d-block mt-1">FontAwesome 5 sınıfı giriniz.</small>
+                            </div>
+
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="aktifSwitch" name="AktifMi" value="true" @(Model.AktifMi == true ? "checked" : "")>
+                                <label class="form-check-label fw-bold ms-2" for="aktifSwitch">Hizmet Aktif</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card bg-white shadow-sm mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold text-info mb-3"><i class="fas fa-search"></i> SEO Ayarları</h5>
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold">SEO Başlık (Meta Title)</label>
+                                @Html.TextBoxFor(x => x.MetaTitle, new { @class = "form-control form-control-sm", placeholder = "Boş bırakılırsa hizmet başlığı kullanılır" })
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold">SEO Açıklama (Meta Description)</label>
+                                @Html.TextAreaFor(x => x.MetaDescription, new { @class = "form-control form-control-sm", rows = 2 })
+                            </div>
+                            <div class="mb-0">
+                                <label class="form-label small fw-bold">Anahtar Kelimeler</label>
+                                @Html.TextBoxFor(x => x.Keywords, new { @class = "form-control form-control-sm", placeholder = "kombi, bursa, tamir" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card bg-white shadow-sm mb-4">
+                        <div class="card-body text-center">
+                            <h5 class="card-title fw-bold text-success mb-3"><i class="fas fa-photo-video"></i> Hizmet Görseli / Video</h5>
+                            
+                            <div class="mb-3" id="previewContainer">
+                                @if(!string.IsNullOrEmpty(Model.ResimYolu))
+                                {
+                                    if (Model.ResimYolu.EndsWith(".mp4") || Model.ResimYolu.EndsWith(".webm") || Model.ResimYolu.EndsWith(".ogg") || Model.ResimYolu.EndsWith(".mov"))
+                                    {
+                                        <video src="@Model.ResimYolu" controls class="img-fluid rounded border mb-2 shadow-sm" style="max-height: 200px; width: 100%; object-fit: cover;"></video>
+                                    }
+                                    else
+                                    {
+                                        <img src="@Model.ResimYolu" class="img-fluid rounded border mb-2 shadow-sm" style="max-height: 200px; width: 100%; object-fit: cover;" />
+                                    }
+                                }
+                                else
+                                {
+                                    <img src="https://placehold.co/600x400?text=Gorsel+Yok" class="img-fluid rounded border mb-2 shadow-sm" style="max-height: 200px; width: 100%; object-fit: cover;" />
+                                }
+                            </div>
+
+                            <div class="input-group">
+                                @Html.TextBoxFor(x => x.ResimYolu, new { @class = "form-control form-control-sm", id="ResimYolu", @readonly="readonly" })
+                                <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('fileInput').click()">
+                                    <i class="fas fa-upload"></i> Medya Yükle
+                                </button>
+                            </div>
+                            <input type="file" id="fileInput" name="file" accept="image/*,video/*" style="display:none" onchange="uploadMedia(this)" />
+                            <small class="text-muted mt-2 d-block">Resim (.jpg, .png) veya Video (.mp4, .webm) yükleyebilirsiniz.</small>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg shadow-sm">
+                            <i class="fas fa-save me-2"></i> Kaydet ve Güncelle
+                        </button>
+                        <a href="@Url.Action("Index", "Hizmetler")" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i> İptal
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section scripts {
+    <!-- CKEditor 5 CDN -->
+    <script src="https://cdn.ckeditor.com/ckeditor5/38.0.1/classic/ckeditor.js"></script>
+    <script>
+        ClassicEditor
+            .create(document.querySelector('#editor'), {
+                toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', '|', 'undo', 'redo'],
+                language: 'tr'
+            })
+            .catch(error => {
+                console.error(error);
+            });
+
+        function uploadMedia(input) {
+            if (input.files && input.files[0]) {
+                var file = input.files[0];
+                var formData = new FormData();
+                formData.append("file", file);
+                
+                // Add Anti-Forgery Token
+                formData.append("__RequestVerificationToken", $('input[name="__RequestVerificationToken"]').val());
+
+                // Determine file type
+                var isVideo = file.type.startsWith('video/');
+                var endpoint = isVideo ? '/Admin/UploadSafe/Video' : '/Admin/UploadSafe/Image';
+
+                // Show loading state
+                var btn = $(input).prev().find('button'); // Button is inside input-group, input is hidden outside
+                // Actually the button triggers the click, so finding it via DOM relative to input might be tricky if structure changed.
+                // Let's us ID or cleaner selection. The button calls click(), input calls onchange().
+                // We update the button text which is visible.
+                var uploadBtn = $(input).prev().find('button'); 
+                if(uploadBtn.length === 0) uploadBtn = $(input).parent().find('button'); // Fallback
+
+                var originalText = uploadBtn.html();
+                uploadBtn.html('<i class="fas fa-spinner fa-spin"></i> Yükleniyor...');
+                uploadBtn.prop('disabled', true);
+
+                $.ajax({
+                    url: endpoint,
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        if (response.success) {
+                            $("#ResimYolu").val(response.path);
+                            
+                            // Update preview
+                            var previewHtml = '';
+                            if (isVideo) {
+                                previewHtml = '<video src="' + response.path + '" controls class="img-fluid rounded border mb-2 shadow-sm" style="max-height: 200px; width: 100%; object-fit: cover;"></video>';
+                            } else {
+                                previewHtml = '<img src="' + response.path + '" class="img-fluid rounded border mb-2 shadow-sm" style="max-height: 200px; width: 100%; object-fit: cover;" />';
+                            }
+                            $("#previewContainer").html(previewHtml);
+
+                            // Show success message briefly
+                            uploadBtn.html('<i class="fas fa-check"></i> Yüklendi');
+                            setTimeout(function() {
+                                uploadBtn.html(originalText);
+                                uploadBtn.prop('disabled', false);
+                            }, 2000);
+                        } else {
+                            alert(response.message);
+                            uploadBtn.html(originalText);
+                            uploadBtn.prop('disabled', false);
+                        }
+                    },
+                    error: function () {
+                        alert("Yükleme sırasında sunucu hatası oluştu.");
+                        uploadBtn.html(originalText);
+                        uploadBtn.prop('disabled', false);
+                    }
+                });
+            }
+        }
+    </script>
+}

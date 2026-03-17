@@ -1,0 +1,76 @@
+﻿@model AIROSWEB.DAL.Db.TblArizaFiyatlari
+@{
+    ViewBag.Title = "Arıza/Fiyat Düzenle";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="row mb-4">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="h3 mb-0 text-gray-800"><i class="fas fa-edit text-info"></i> Fiyat/Arıza Kaydı Düzenle</h2>
+            <p class="text-muted mb-0">Web sitesi üzerindeki fiyat hesaplama sihirbazı kayıtlarınızı güncelleyin.</p>
+        </div>
+        <a href="/Admin/Fiyatlar/Index" class="btn btn-secondary shadow-sm"><i class="fas fa-arrow-left fa-sm text-white-50"></i> Geri Dön</a>
+    </div>
+</div>
+
+<div class="card shadow mb-4 border-0">
+    <div class="card-body">
+        @using (Html.BeginForm("Edit", "Fiyatlar", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.Id)
+            
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label class="form-label fw-bold">Cihaz Türü <span class="text-danger">*</span></label>
+                    <input type="text" name="CihazTuru" list="cihazList" class="form-control" required value="@Model.CihazTuru" placeholder="Örn: Kombi" />
+                    <datalist id="cihazList">
+                        @if (ViewBag.Cihazlar != null)
+                        {
+                            foreach (var cihaz in (List<string>)ViewBag.Cihazlar)
+                            {
+                                if (!string.IsNullOrEmpty(cihaz))
+                                {
+                                    <option value="@cihaz"></option>
+                                }
+                            }
+                        }
+                    </datalist>
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <label class="form-label fw-bold">Marka (Opsiyonel)</label>
+                    @Html.TextBoxFor(m => m.Marka, new { @class = "form-control", placeholder = "Örn: Bosch veya Tümü bırakın" })
+                    <small class="text-muted">Boş bırakılırsa tüm markalar için geçerli olur.</small>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Arıza / Hizmet Adı <span class="text-danger">*</span></label>
+                    @Html.TextBoxFor(m => m.ArizaAdi, new { @class = "form-control", required = "required" })
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">Fiyat Aralığı <span class="text-danger">*</span></label>
+                    @Html.TextBoxFor(m => m.FiyatAraligi, new { @class = "form-control", required = "required" })
+                    <small class="text-success fw-bold">Fiyat tahmini aralığı güncelleyin.</small>
+                </div>
+
+                <div class="col-md-2 mb-3">
+                    <label class="form-label fw-bold">Sıralama Gösterimi</label>
+                    @Html.TextBoxFor(m => m.Sira, new { @class = "form-control", type = "number" })
+                </div>
+
+                <div class="col-md-3 mb-3 d-flex align-items-center">
+                    <div class="form-check form-switch fs-5 mt-4">
+                        @Html.CheckBoxFor(m => m.AktifMi, new { @class = "form-check-input", id = "AktifMi" })
+                        <label class="form-check-label ms-2 mt-1" for="AktifMi">Aktif (Yayında İşaretli Olsun mu?)</label>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4">
+            <button type="submit" class="btn btn-info btn-lg px-5 shadow-sm fw-bold text-white"><i class="fas fa-save me-2"></i> GÜNCELLE TIKLA</button>
+        }
+    </div>
+</div>

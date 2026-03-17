@@ -1,0 +1,200 @@
+@model AIROSWEB.DAL.Db.TblGaleri
+@{
+    ViewBag.Title = "Yeni Galeri Öğesi";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <h4 class="mb-0"><i class="fas fa-plus"></i> Yeni Galeri Öğesi Ekle</h4>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm("Create", "Galeri", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Başlık <span class="text-danger">*</span></label>
+                    @Html.TextBoxFor(m => m.Baslik, new { @class = "form-control", required = "required", placeholder = "Örn: Kombi Montajı - Nilüfer" })
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Kategori</label>
+                    @Html.TextBoxFor(m => m.Kategori, new { @class = "form-control", list = "kategoriList", placeholder = "Seçiniz veya yazınız..." })
+                    <datalist id="kategoriList">
+                        @if (ViewBag.Kategoriler != null)
+                        {
+                            foreach (var item in (List<string>)ViewBag.Kategoriler)
+                            {
+                                <option value="@item"></option>
+                            }
+                        }
+                    </datalist>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Sıra</label>
+                    @Html.TextBoxFor(m => m.Sira, new { @class = "form-control", type = "number", value = "0" })
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-bold">Açıklama (Editör)</label>
+                    @Html.TextAreaFor(m => m.Aciklama, new { @class = "form-control", id = "editor" })
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Medya (Resim/Video)</label>
+                    <div class="input-group mb-2">
+                        @Html.TextBoxFor(m => m.ResimYolu, new { @class = "form-control", id = "ResimYolu", placeholder = "/Uploads/proje.jpg veya .mp4" })
+                        <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('fileUpload').click()">
+                            <i class="fas fa-upload me-1"></i> Yükle
+                        </button>
+                    </div>
+                    <input type="file" id="fileUpload" accept="image/*,video/*" style="display:none;" onchange="uploadMedia(this)" />
+                    
+                    <div id="mediaPreviewContainer" class="mt-2 text-center p-2 border rounded bg-light" style="min-height: 150px; display: flex; align-items: center; justify-content: center;">
+                        <img id="previewImage" src="#" alt="Önizleme" style="max-height: 140px; display: none;" class="img-fluid rounded shadow-sm" />
+                        <video id="previewVideo" src="#" controls style="max-height: 140px; display: none;" class="img-fluid rounded shadow-sm"></video>
+                        <div id="previewPlaceholder">
+                            <i class="fas fa-photo-video fa-3x text-muted opacity-50"></i>
+                            <p class="text-muted small mb-0 mt-2">Önizleme Yok</p>
+                            <small class="text-muted" style="font-size: 0.75rem;">Resim (.jpg, .png) veya Video (.mp4, .webm)</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Konum</label>
+                    @Html.TextBoxFor(m => m.Konum, new { @class = "form-control", placeholder = "Örn: Nilüfer, Bursa" })
+                </div>
+                <div class="col-12">
+                    <div class="form-check form-switch">
+                        <div class="form-check">
+                            @Html.CheckBoxFor(m => m.AktifMi, new { @class = "form-check-input", @checked = "checked", id = "aktifCheck" })
+                            <label class="form-check-label" for="aktifCheck">Aktif</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4" />
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> Kaydet
+                </button>
+                <a href="@Url.Action("Index")" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> İptal
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@section scripts {
+    <!-- CKEditor 5 CDN -->
+    <script src="https://cdn.ckeditor.com/ckeditor5/38.0.1/classic/ckeditor.js"></script>
+    <script>
+        ClassicEditor
+            .create(document.querySelector('#editor'), {
+                toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', '|', 'insertTable', 'undo', 'redo'],
+                language: 'tr'
+            })
+            .catch(error => {
+                console.error(error);
+            });
+        function uploadMedia(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                // Add Anti-Forgery Token
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                formData.append('__RequestVerificationToken', token);
+
+                const isVideo = file.type.startsWith('video/');
+                const endpoint = isVideo ? '/Admin/UploadSafe/Video' : '/Admin/UploadSafe/Image';
+
+                const group = input.previousElementSibling;
+                const btn = group.querySelector('button');
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Yükleniyor...';
+                btn.disabled = true;
+
+                $.ajax({
+                    url: endpoint,
+                    type: 'POST',
+                    data: formData,
+                    processData: false, 
+                    contentType: false, 
+                    success: function(data) {
+                        if (data.success) {
+                            const pathInput = document.getElementById('ResimYolu');
+                            pathInput.value = data.path;
+                            updatePreview(data.path);
+                            
+                            btn.innerHTML = '<i class="fas fa-check"></i> Yüklendi';
+                            setTimeout(() => {
+                                btn.innerHTML = originalHtml;
+                                btn.disabled = false;
+                            }, 2000);
+                        } else {
+                            alert('Hata: ' + data.message);
+                            btn.innerHTML = originalHtml;
+                            btn.disabled = false;
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.error('Upload error:', textStatus, errorThrown);
+                        alert('Yükleme sırasında teknik bir hata oluştu.');
+                        btn.innerHTML = originalHtml;
+                        btn.disabled = false;
+                    }
+                });
+            }
+        }
+
+        function updatePreview(path) {
+            const imgPreview = document.getElementById('previewImage');
+            const videoPreview = document.getElementById('previewVideo');
+            const placeholder = document.getElementById('previewPlaceholder');
+
+            if (path) {
+                const lowerPath = path.toLowerCase();
+                const isVideo = lowerPath.endsWith('.mp4') || lowerPath.endsWith('.webm') || lowerPath.endsWith('.ogg') || lowerPath.endsWith('.mov');
+
+                if (isVideo) {
+                    imgPreview.style.display = 'none';
+                    imgPreview.src = '#';
+                    
+                    videoPreview.src = path;
+                    videoPreview.style.display = 'inline-block';
+                    
+                    placeholder.style.display = 'none';
+                } else {
+                    videoPreview.style.display = 'none';
+                    videoPreview.pause();
+                    videoPreview.src = '#';
+
+                    imgPreview.src = path;
+                    imgPreview.style.display = 'inline-block';
+                    
+                    placeholder.style.display = 'none';
+                }
+            } else {
+                imgPreview.style.display = 'none';
+                videoPreview.style.display = 'none';
+                videoPreview.pause();
+                placeholder.style.display = 'block';
+            }
+        }
+
+        // Sayfa yüklendiğinde mevcut medyayı göster
+        window.addEventListener('load', () => {
+            const currentPath = document.getElementById('ResimYolu').value;
+            if (currentPath) updatePreview(currentPath);
+        });
+
+        // Manuel input değişiminde önizlemeyi güncelle
+        document.getElementById('ResimYolu').addEventListener('input', function() {
+            updatePreview(this.value);
+        });
+    </script>
+}

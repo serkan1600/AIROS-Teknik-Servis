@@ -1,0 +1,113 @@
+@model AIROSWEB.DAL.Db.TblAdmin
+@{
+    ViewBag.Title = "Profil ve Güvenlik Ayarları";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-0 text-dark">Profil ve Güvenlik Ayarları</h3>
+        <p class="text-muted small mb-0">Yönetici hesabı bilgilerinizi ve şifre kurtarma ayarlarınızı buradan yönetebilirsiniz.</p>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success border-0 shadow-sm alert-dismissible fade show mb-4">
+        <i class="fas fa-check-circle me-2"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-header bg-white border-bottom py-3">
+                <h5 class="mb-0 fw-bold"><i class="fas fa-user-cog me-2 text-primary"></i>Hesap Bilgileri</h5>
+            </div>
+            <div class="card-body p-4">
+                @using (Html.BeginForm("Guncelle", "Profil", FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-muted small text-uppercase">Kullanıcı Adı</label>
+                            <input type="text" class="form-control bg-light" value="@Model.KullaniciAdi" disabled />
+                            <small class="text-muted">Kullanıcı adı değiştirilemez.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-muted small text-uppercase">E-Posta Adresi</label>
+                            @Html.TextBoxFor(x => x.Email, new { @class = "form-control", type = "email", placeholder = "admin@airoservis.com" })
+                        </div>
+
+                        <hr class="my-4 opacity-75">
+
+                        <div class="col-12 mt-0">
+                            <h6 class="fw-bold text-danger mb-3"><i class="fas fa-shield-alt me-2"></i>Kurtarma Ayarları (Gizli Soru)</h6>
+                            <p class="text-muted small">Şifrenizi unutursanız, e-posta gerektirmeden bu soruyla hesabınızı kurtarabilirsiniz.</p>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-muted small text-uppercase">Gizli Soru</label>
+                            @Html.TextBoxFor(x => x.GizliSoru, new { @class = "form-control", placeholder = "Örn: İlk evcil hayvanınızın adı?" })
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-muted small text-uppercase">Gizli Cevap</label>
+                            @Html.TextBoxFor(x => x.GizliCevap, new { @class = "form-control", placeholder = "Cevabı buraya yazın..." })
+                        </div>
+
+                        <hr class="my-4 opacity-75">
+
+                        <div class="col-12 mt-0">
+                            <h6 class="fw-bold text-warning mb-3"><i class="fas fa-key me-2"></i>Şifre Değiştir</h6>
+                            <p class="text-muted small">Değiştirmek istemiyorsanız boş bırakın.</p>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-muted small text-uppercase">Yeni Şifre</label>
+                            <input type="password" name="yeniSifre" class="form-control" placeholder="******" />
+                        </div>
+
+                        <div class="col-12 mt-5">
+                            <button type="submit" class="btn btn-primary px-5 py-2 shadow-sm">
+                                <i class="fas fa-save me-2"></i>Profilimi Güncelle
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 rounded-4 bg-primary text-white mb-4">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-white bg-opacity-25 rounded-circle p-3 me-3">
+                        <i class="fas fa-info-circle fa-2x"></i>
+                    </div>
+                    <h5 class="mb-0 fw-bold">Neden Önemli?</h5>
+                </div>
+                <p class="mb-0">Gizli soru ve cevap, şifrenizi unutmanız durumunda e-posta ayarlarınızda sorun olsa bile hesabınızı <strong>anında</strong> kurtarmanızı sağlar. Lütfen kimsenin tahmin edemeyeceği bir soru belirleyin.</p>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-3"><i class="fas fa-history me-2 text-muted"></i>Hesap Durumu</h6>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Yetki Seviyesi:</span>
+                    <span class="badge bg-success-subtle text-success border border-success px-2">@Model.Rol</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Hesap Durumu:</span>
+                    <span class="text-success fw-bold"><i class="fas fa-check-circle me-1"></i>Aktif</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-success-subtle { background-color: #e6f7e9; }
+</style>

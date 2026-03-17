@@ -1,0 +1,41 @@
+@{
+    ViewBag.Title = "SEO Onarımı";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="fas fa-magic me-2"></i>Otomatik SEO Onarımı</h4>
+                </div>
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-search-dollar fa-4x text-muted mb-4"></i>
+                    <h3>Google ve SEO Optimizasyonu</h3>
+                    <p class="text-muted mb-4">Bu araç, sitenizin ana sayfa başlıklarını, meta açıklamalarını ve kritik içerik alanlarını Google standartlarına göre otomatik olarak optimize eder.</p>
+                    
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success border-0 shadow-sm">
+                            @TempData["Success"]
+                        </div>
+                    }
+
+                    <div class="alert alert-info border-0 shadow-sm text-start">
+                        <strong><i class="fas fa-info-circle me-2"></i>Bilgi:</strong> 
+                        Bu işlem mevcut içeriklerinizi güncelleyebilir. Bursa odaklı anahtar kelimeleri (kombi servisi, klima tamiri vb.) en verimli şekilde yerleştirir.
+                    </div>
+
+                    @using (Html.BeginForm("RunFix", "SeoFix", FormMethod.Post))
+                    {
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-success btn-lg px-5 shadow">
+                            <i class="fas fa-check me-2"></i>SEO Onarımını Başlat
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

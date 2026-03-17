@@ -1,0 +1,95 @@
+@model AIROSWEB.DAL.Db.TblMusteriYorumlari
+@{
+    ViewBag.Title = "Yorum Ekle";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-success text-white">
+        <h4 class="mb-0"><i class="fas fa-plus"></i> Yeni Müşteri Yorumu</h4>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm("Create", "Yorumlar", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Ad Soyad</label>
+                    <input type="text" name="AdSoyad" class="form-control" required />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Meslek / Ünvan</label>
+                    <input type="text" name="Meslek" class="form-control" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Görsel (Opsiyonel)</label>
+                    <div class="input-group">
+                        <input type="text" id="ResimYolu" name="ResimYolu" class="form-control" placeholder="Resim Yolu" />
+                        <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="uploadImage(this)" />
+                        <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('fileInput').click()">
+                            <i class="fas fa-upload"></i> Yükle
+                        </button>
+                    </div>
+                    <div id="preview" class="mt-2 text-center"></div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Puan (1-5)</label>
+                    <select name="Puan" class="form-select">
+                        <option value="5">5 Yıldız</option>
+                        <option value="4">4 Yıldız</option>
+                        <option value="3">3 Yıldız</option>
+                        <option value="2">2 Yıldız</option>
+                        <option value="1">1 Yıldız</option>
+                    </select>
+                </div>
+                <div class="col-12 mb-3">
+                    <label class="form-label">Yorum (Editör)</label>
+                    <textarea name="Yorum" id="editor" class="form-control" required></textarea>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Kaydet</button>
+            <a href="@Url.Action("Index", "Yorumlar")" class="btn btn-secondary">İptal</a>
+        }
+    </div>
+</div>
+
+@section scripts {
+    <!-- CKEditor 5 CDN -->
+    <script src="https://cdn.ckeditor.com/ckeditor5/38.0.1/classic/ckeditor.js"></script>
+    <script>
+        ClassicEditor
+            .create(document.querySelector('#editor'), {
+                toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', '|', 'insertTable', 'undo', 'redo'],
+                language: 'tr'
+            })
+            .catch(error => {
+                console.error(error);
+            });
+        function uploadImage(input) {
+            if (input.files && input.files[0]) {
+                var formData = new FormData();
+                formData.append("file", input.files[0]);
+                formData.append("__RequestVerificationToken", $('input[name="__RequestVerificationToken"]').val());
+
+                $.ajax({
+                    url: '/Admin/UploadSafe/Image',
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        if (response.success) {
+                            $("#ResimYolu").val(response.path);
+                            $("#preview").html('<img src="' + response.path + '" style="max-height:100px; border-radius:50%;" />');
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function () {
+                        alert("Yükleme sırasında hata oluştu.");
+                    }
+                });
+            }
+        }
+    </script>
+}

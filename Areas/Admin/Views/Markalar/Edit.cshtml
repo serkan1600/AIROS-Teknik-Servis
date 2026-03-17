@@ -1,0 +1,131 @@
+@model AIROSWEB.DAL.Db.TblMarkalar
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    ViewBag.Title = "Marka Düzenle";
+}
+
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-warning py-3">
+        <h5 class="mb-0 text-dark"><i class="fas fa-edit me-2"></i>Marka Düzenle</h5>
+    </div>
+    <div class="card-body p-4">
+        @using (Html.BeginForm("Edit", "Markalar", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(x => x.Id)
+            
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-muted">Marka Adı</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fas fa-tag text-warning"></i></span>
+                            @Html.TextBoxFor(x => x.MarkaAdi, new { @class = "form-control border-start-0 ps-0", required = "required" })
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-muted">Marka Logosu</label>
+                        <div class="input-group mb-2">
+                             @Html.TextBoxFor(m => m.LogoYolu, new { @class = "form-control", id = "ResimYolu" })
+                            <button type="button" class="btn btn-warning" onclick="document.getElementById('fileUpload').click()">
+                                <i class="fas fa-upload me-1"></i> Değiştir
+                            </button>
+                        </div>
+                        <input type="file" id="fileUpload" accept="image/*" style="display:none;" onchange="uploadSafeImage(this)" />
+                        <small class="text-muted"><i class="fas fa-info-circle me-1"></i> Mevcut logoyu güncellemek için dosya seçin.</small>
+                    </div>
+
+                     <div class="mb-4">
+                          <div class="form-check form-switch p-0 ms-4">
+                             @Html.CheckBox("AktifMi", Model.AktifMi ?? false, new { @class = "form-check-input", role = "switch", id = "AktifMi" })
+                             <label class="form-check-label fw-bold ms-2" for="AktifMi">Bu Marka Aktif Mi?</label>
+                         </div>
+                     </div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-bold text-muted d-block mb-3">Logo Önizleme</label>
+                    <div id="imagePreviewContainer" class="border rounded-3 p-4 bg-light d-flex align-items-center justify-content-center shadow-inner" style="min-height: 200px;">
+                        <img id="previewImage" src="@Model.LogoYolu" alt="Logo Önizleme" style="max-height: 120px; @(string.IsNullOrEmpty(Model.LogoYolu) ? "display: none;" : "display: inline-block;")" class="img-fluid" />
+                        <div id="previewPlaceholder" class="text-center" style="@(string.IsNullOrEmpty(Model.LogoYolu) ? "display: block;" : "display: none;")">
+                            <i class="fas fa-image fa-4x text-muted mb-2 opacity-25"></i>
+                            <p class="text-muted small mb-0">Logo Bulunamadı</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-5 pt-3 border-top">
+                <button type="submit" class="btn btn-warning px-4 py-2 me-2 text-dark fw-bold">
+                    <i class="fas fa-save me-2"></i>Değişiklikleri Kaydet
+                </button>
+                <a href="@Url.Action("Index", "Markalar")" class="btn btn-outline-secondary px-4 py-2">
+                    <i class="fas fa-times me-2"></i>Vazgeç
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        function uploadSafeImage(input) {
+            if (input.files && input.files[0]) {
+                const formData = new FormData();
+                formData.append('file', input.files[0]);
+                
+                // Add Anti-Forgery Token
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                formData.append('__RequestVerificationToken', token);
+
+                const btn = document.querySelector('button[onclick*="fileUpload"]');
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>...';
+                btn.disabled = true;
+
+                fetch('@Url.Action("Image", "UploadSafe", new { area = "Admin" })', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const pathInput = document.getElementById('ResimYolu');
+                        if (pathInput) {
+                            pathInput.value = data.path;
+                            updatePreview(data.path);
+                        }
+                    } else {
+                        Swal.fire('Hata!', data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Upload error:', error);
+                    Swal.fire('Hata!', 'Yükleme sırasında bir hata oluştu.', 'error');
+                })
+                .finally(() => {
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                });
+            }
+        }
+
+        function updatePreview(path) {
+            const preview = document.getElementById('previewImage');
+            const placeholder = document.getElementById('previewPlaceholder');
+            if (path) {
+                preview.src = path;
+                preview.style.display = 'inline-block';
+                placeholder.style.display = 'none';
+            } else {
+                preview.style.display = 'none';
+                placeholder.style.display = 'block';
+            }
+        }
+
+        document.getElementById('ResimYolu').addEventListener('input', function() {
+            updatePreview(this.value);
+        });
+    </script>
+}

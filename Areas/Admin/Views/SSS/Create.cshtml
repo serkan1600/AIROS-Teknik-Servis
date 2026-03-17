@@ -1,0 +1,81 @@
+@model AIROSWEB.DAL.Db.TblSSS
+@{
+    ViewBag.Title = "Yeni Soru Ekle";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <h4 class="mb-0"><i class="fas fa-plus"></i> Yeni Soru Ekle</h4>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm("Create", "SSS", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            @Html.ValidationSummary(false, "", new { @class = "alert alert-danger" })
+            
+            <div class="row g-3">
+                <div class="col-md-9">
+                    <label class="form-label fw-bold">Soru <span class="text-danger">*</span></label>
+                    @Html.TextBoxFor(m => m.Soru, new { @class = "form-control", required = "required", placeholder = "Örn: Kombi bakımı ne kadar sürer?" })
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Sıra</label>
+                    @Html.TextBoxFor(m => m.Sira, new { @class = "form-control", type = "number", value = "0" })
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-bold">Cevap (Editör) <span class="text-danger">*</span></label>
+                    @Html.TextAreaFor(m => m.Cevap, new { @class = "form-control", id = "editor" })
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Kategori</label>
+                    @Html.TextBoxFor(m => m.Kategori, new { @class = "form-control", placeholder = "Örn: Kombi, Klima, Genel" })
+                    <small class="text-muted">Soruları gruplamak için kategori belirleyin</small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Durum</label>
+                    <div class="form-check form-switch mt-2">
+                        @Html.CheckBoxFor(m => m.AktifMi, new { @class = "form-check-input", @checked = "checked" })
+                        <label class="form-check-label">Aktif</label>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4" />
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save me-1"></i> Kaydet
+                </button>
+                <a href="@Url.Action("Index")" class="btn btn-secondary">
+                    <i class="fas fa-times me-1"></i> İptal
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@section scripts {
+    <!-- CKEditor 5 CDN -->
+    <script src="https://cdn.ckeditor.com/ckeditor5/38.0.1/classic/ckeditor.js"></script>
+    <script>
+        let editorInstance;
+        ClassicEditor
+            .create(document.querySelector('#editor'), {
+                toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', '|', 'insertTable', 'undo', 'redo'],
+                language: 'tr'
+            })
+            .then(editor => {
+                editorInstance = editor;
+            })
+            .catch(error => {
+                console.error(error);
+            });
+
+        document.querySelector('form').addEventListener('submit', function() {
+            if (editorInstance) {
+                document.querySelector('#editor').value = editorInstance.getData();
+            }
+        });
+    </script>
+}

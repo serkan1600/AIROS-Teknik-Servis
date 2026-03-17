@@ -1,0 +1,149 @@
+@model AIROSWEB.DAL.Db.TblIcerikler
+@{
+    ViewBag.Title = "İçerik Düzenle";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-warning text-dark">
+        <h4 class="mb-0"><i class="fas fa-edit"></i> İçerik Düzenle</h4>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm("Edit", "Icerik", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.Id)
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Bölüm Adı</label>
+                    @Html.TextBoxFor(m => m.BolumAdi, new { @class = "form-control", required = "required", @readonly = "readonly" })
+                    <small class="text-danger">Bölüm adı değiştirilemez (yazılım tarafından kullanılır).</small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Sıra</label>
+                    @Html.TextBoxFor(m => m.Sira, new { @class = "form-control", type = "number" })
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-bold">Başlık</label>
+                    @Html.TextBoxFor(m => m.Baslik, new { @class = "form-control" })
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-bold">Alt Başlık</label>
+                    @Html.TextBoxFor(m => m.AltBaslik, new { @class = "form-control" })
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-bold">İçerik / Açıklama (Editör)</label>
+                    @Html.TextAreaFor(m => m.Aciklama, new { @class = "form-control", id = "editor" })
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="ResimYolu">Resim</label>
+                    <div class="row align-items-center">
+                        <div class="col-md-9">
+                            <div class="input-group">
+                                @Html.TextBoxFor(m => m.ResimYolu, new { @class = "form-control", placeholder = "/Uploads/resim.jpg", id = "ResimYolu", oninput = "updatePreview(this.value)" })
+                                <button type="button" class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                                    <i class="fas fa-camera"></i> Değiştir
+                                </button>
+                            </div>
+                            <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="uploadSafeImage(this)" />
+                            <small class="text-muted">Manuel yol girebilir veya bilgisayardan seçebilirsiniz.</small>
+                        </div>
+                        <div class="col-md-3">
+                            <div id="previewBox" class="border rounded p-1 text-center bg-light" style="min-height: 100px; display: flex; align-items: center; justify-content: center;">
+                                <img id="resimPreview" src="@(string.IsNullOrEmpty(Model?.ResimYolu) ? "/Content/Images/no-image.png" : Model.ResimYolu)" class="img-fluid rounded" style="max-height: 100px; display: @(string.IsNullOrEmpty(Model?.ResimYolu) ? "none" : "block");" />
+                                <span id="previewText" style="display: @(string.IsNullOrEmpty(Model?.ResimYolu) ? "block" : "none");" class="small text-muted">Önizleme Yok</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 pt-3">
+                     <div class="form-check form-switch fs-5">
+                        @Html.CheckBoxFor(m => m.AktifMi, new { @class = "form-check-input", role = "switch" })
+                        <label class="form-check-label ms-2" for="AktifMi">Aktif Durum</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Güncelle</button>
+                <a href="/Admin/Icerik/Index" class="btn btn-secondary">İptal</a>
+            </div>
+        }
+    </div>
+</div>
+
+@section scripts {
+    <!-- CKEditor 5 CDN -->
+    <script src="https://cdn.ckeditor.com/ckeditor5/38.0.1/classic/ckeditor.js"></script>
+    <script>
+        ClassicEditor
+            .create(document.querySelector('#editor'), {
+                toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', '|', 'insertTable', 'undo', 'redo'],
+                language: 'tr'
+            })
+            .catch(error => {
+                console.error(error);
+            });
+        function updatePreview(url) {
+            var img = document.getElementById('resimPreview');
+            var text = document.getElementById('previewText');
+            if (url && url.length > 2) {
+                img.src = url;
+                img.style.display = 'block';
+                text.style.display = 'none';
+            } else {
+                img.style.display = 'none';
+                text.style.display = 'block';
+            }
+        }
+
+        function uploadSafeImage(input) {
+            if (input.files && input.files[0]) {
+                const formData = new FormData();
+                formData.append('file', input.files[0]);
+                
+                // Add Anti-Forgery Token
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                formData.append('__RequestVerificationToken', token);
+
+                const group = input.previousElementSibling;
+                const btn = group.querySelector('button');
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+                btn.disabled = true;
+
+                fetch('@Url.Action("Image", "UploadSafe", new { area = "Admin" })', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(r => {
+                    if (!r.ok) throw new Error('Sunucu hatası: ' + r.status);
+                    return r.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        const pathInput = document.getElementById('ResimYolu');
+                        if (pathInput) {
+                            pathInput.value = data.path;
+                            updatePreview(data.path);
+                        } else {
+                            console.error('ResimYolu input bulunamadı!');
+                            alert('Hata: Form alanı bulunamadı ama resim yüklendi: ' + data.path);
+                        }
+                    } else {
+                        alert('Hata: ' + data.message);
+                    }
+                })
+                .catch(e => {
+                    console.error(e);
+                    alert('Yükleme başarısız oldu: ' + e.message);
+                })
+                .finally(() => {
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                });
+            }
+        }
+    </script>
+}

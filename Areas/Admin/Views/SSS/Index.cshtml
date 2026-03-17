@@ -1,0 +1,106 @@
+@model List<AIROSWEB.DAL.Db.TblSSS>
+@{
+    ViewBag.Title = "SSS Yönetimi";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="fas fa-check-circle"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h4 class="mb-0"><i class="fas fa-question-circle"></i> Sıkça Sorulan Sorular</h4>
+        <a href="@Url.Action("Create")" class="btn btn-light">
+            <i class="fas fa-plus"></i> Yeni Soru Ekle
+        </a>
+    </div>
+    <div class="card-body p-0">
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="50">Sıra</th>
+                            <th>Soru</th>
+                            <th width="150">Kategori</th>
+                            <th width="100">Durum</th>
+                            <th width="150">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="text-center">@item.Sira</td>
+                                <td>
+                                    <strong>@item.Soru</strong>
+                                    <br />
+                                    <small class="text-muted">
+                                        @if (!string.IsNullOrEmpty(item.Cevap) && item.Cevap.Length > 100)
+                                        {
+                                            @item.Cevap.Substring(0, 100)<text>...</text>
+                                        }
+                                        else
+                                        {
+                                            @item.Cevap
+                                        }
+                                    </small>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.Kategori))
+                                    {
+                                        <span class="badge bg-info">@item.Kategori</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.AktifMi)
+                                    {
+                                        <span class="badge bg-success">Aktif</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Pasif</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="@Url.Action("Edit", new { id = item.Id })" class="btn btn-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        @using (Html.BeginForm("Delete", "SSS", new { id = item.Id }, FormMethod.Post, new { @class = "d-inline", onsubmit = "return confirm('Silmek istediğinize emin misiniz?');" }))
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-question-circle fa-4x text-muted mb-3"></i>
+                <p class="text-muted">Henüz soru bulunmuyor.</p>
+                <a href="@Url.Action("Create")" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> İlk Soruyu Ekle
+                </a>
+            </div>
+        }
+    </div>
+</div>

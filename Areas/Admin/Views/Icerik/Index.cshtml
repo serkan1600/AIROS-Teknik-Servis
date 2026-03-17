@@ -1,0 +1,62 @@
+@using AIROSWEB.DAL.Db
+@model List<TblIcerikler>
+@{
+    ViewBag.Title = "İçerik Yönetimi";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">İçerik Listesi</h4>
+        <a href="@Url.Action("Create", "Icerik", new { bolum = Request.QueryString["bolum"] })" class="btn btn-light text-primary btn-sm">
+            <i class="fas fa-plus"></i> Yeni İçerik Ekle
+        </a>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Bölüm Adı</th>
+                    <th>Başlık</th>
+                    <th>Alt Başlık</th>
+                    <th>Açıklama</th>
+                    <th>Sıra</th>
+                    <th>Durum</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td><strong>@item.BolumAdi</strong></td>
+                        <td>@item.Baslik</td>
+                        <td>@item.AltBaslik</td>
+                        <td>@(item.Aciklama?.Length > 50 ? item.Aciklama.Substring(0, 50) + "..." : item.Aciklama)</td>
+                        <td>@item.Sira</td>
+                        <td>
+                            @using (Html.BeginForm("DurumDegistir", "Icerik", new { id = item.Id }, FormMethod.Post, new { @class = "d-inline toggle-form" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <div class="form-check form-switch d-inline-block">
+                                    <input class="form-check-input status-toggle" type="checkbox" role="switch" @(item.AktifMi ? "checked" : "") onchange="this.form.submit()">
+                                    <label class="form-check-label small @(item.AktifMi ? "text-success fw-bold" : "text-danger")">
+                                        @(item.AktifMi ? "Aktif" : "Pasif")
+                                    </label>
+                                </div>
+                            }
+                        </td>
+                        <td>
+                            <a href="/Admin/Icerik/Edit/@item.Id" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i> Düzenle</a>
+                            @using (Html.BeginForm("Delete", "Icerik", new { id = item.Id }, FormMethod.Post, new { @class = "d-inline", onsubmit = "return confirm('Bu içeriği silmek istediğinize emin misiniz?');" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-danger btn-sm border-start-0 rounded-start-0"><i class="fas fa-trash"></i> Sil</button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

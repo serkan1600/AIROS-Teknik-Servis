@@ -1,0 +1,162 @@
+@model IEnumerable<AIROSWEB.DAL.Db.TblSosyalKanit>
+@{
+    ViewBag.Title = "Sosyal Kanıt (Social Proof) Yönetimi";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex justify-content-between align-items-center bg-white">
+        <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-bullhorn"></i> Sosyal Kanıt Bildirimleri</h6>
+        <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#createModal">
+            <i class="fas fa-plus"></i> Yeni Bildirim Ekle
+        </button>
+    </div>
+    <div class="card-body">
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success"><i class="fas fa-check-circle"></i> @TempData["Success"]</div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> @TempData["Error"]</div>
+        }
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th width="50">Sıra</th>
+                        <th>İkon/Tip</th>
+                        <th>Müşteri Adı</th>
+                        <th>Lokasyon</th>
+                        <th>İşlem (Hareket)</th>
+                        <th>Zaman</th>
+                        <th>Durum</th>
+                        <th>İşlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td><span class="badge bg-secondary">@item.Sira</span></td>
+                            <td>
+                                @if (item.Tip == "randevu") { <i class="fas fa-calendar-check text-primary fa-lg"></i> }
+                                else if (item.Tip == "bekliyor") { <i class="fas fa-clock text-warning fa-lg"></i> }
+                                else if (item.Tip == "yildiz") { <i class="fas fa-star text-warning fa-lg"></i> }
+                                else if (item.Tip == "whatsapp") { <i class="fas fa-whatsapp text-success fa-lg"></i> }
+                                else if (item.Tip == "tamam") { <i class="fas fa-check-circle text-success fa-lg"></i> }
+                                else { <i class="fas fa-bell text-secondary fa-lg"></i> }
+                            </td>
+                            <td class="fw-bold">@item.MusteriAdi</td>
+                            <td>@item.Lokasyon</td>
+                            <td>@item.Islem</td>
+                            <td>@item.Zaman</td>
+                            <td>
+                                <div class="form-check form-switch custom-switch-primary">
+                                    <input class="form-check-input status-toggle" type="checkbox" role="switch" data-id="@item.Id" @(item.AktifMi ? "checked" : "")>
+                                </div>
+                            </td>
+                            <td>
+                                <a href="@Url.Action("Edit", "SosyalKanit", new { id = item.Id })" class="btn btn-sm btn-outline-primary me-1" title="Düzenle">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                @using (Html.BeginForm("Delete", "SosyalKanit", new { id = item.Id }, FormMethod.Post, new { style = "display:inline;", onsubmit = "return confirm('Bu bildirimi silmek istediğinize emin misiniz?');" }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Sil"><i class="fas fa-trash"></i></button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            @if(!Model.Any())
+            {
+                <div class="alert alert-warning text-center">Henüz sosyal kanıt bildirimi eklenmemiştir. Sitede örnek veriler gösterilecektir.</div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Yeni Ekle Modal -->
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="fas fa-plus"></i> Yeni Bildirim Ekle</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            @using (Html.BeginForm("Create", "SosyalKanit", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Müşteri Adı (Örn: Ahmet Y.)</label>
+                            <input type="text" name="MusteriAdi" class="form-control" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Lokasyon (Örn: Nilüfer)</label>
+                            <input type="text" name="Lokasyon" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">İşlem Hareketi (Örn: WhatsApp'tan teklif aldı)</label>
+                        <input type="text" name="Islem" class="form-control" required />
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">Zaman</label>
+                            <input type="text" name="Zaman" class="form-control" placeholder="Örn: 5 dk önce" required/>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">Sıra No</label>
+                            <input type="number" name="Sira" class="form-control" value="1" min="1" required/>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">Tip (İkon)</label>
+                            <select name="Tip" class="form-select" required>
+                                <option value="randevu">Randevu Aldı (Mavi Takvim)</option>
+                                <option value="tamam">İşlem Tamam (Yeşil Tik)</option>
+                                <option value="bekliyor">Talep Bekliyor (Sarı Saat)</option>
+                                <option value="whatsapp">WhatsApp (Yeşil İkon)</option>
+                                <option value="yildiz">Yıldız (5 Sarı Yıldız)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Kaydet ve Aktifleştir</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section scripts {
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll('.status-toggle').forEach(t => {
+            t.addEventListener('change', function() {
+                var id = this.getAttribute('data-id');
+                var token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                if(!token) {
+                    token = document.querySelector('#__AjaxAntiForgeryForm input[name="__RequestVerificationToken"]')?.value;
+                }
+                
+                fetch('/Admin/SosyalKanit/ToggleStatus/' + id, {
+                    method: 'POST',
+                    headers: { 'RequestVerificationToken': token }
+                }).then(r => r.json()).then(res => {
+                    if(!res.success) {
+                        alert('Güncellenirken hata oluştu.');
+                        this.checked = !this.checked;
+                    }
+                });
+            });
+        });
+    });
+</script>
+}

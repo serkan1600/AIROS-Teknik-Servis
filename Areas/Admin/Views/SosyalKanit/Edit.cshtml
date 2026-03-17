@@ -1,0 +1,68 @@
+@model AIROSWEB.DAL.Db.TblSosyalKanit
+@{
+    ViewBag.Title = "Sosyal Kanıt Düzenle";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-primary text-white">
+        <h6 class="m-0 font-weight-bold"><i class="fas fa-edit"></i> Sosyal Kanıt Düzenle</h6>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm("Edit", "SosyalKanit", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.Id)
+            @Html.HiddenFor(m => m.OlusturulmaTarihi)
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Müşteri Adı (Örn: Ahmet Y.)</label>
+                    @Html.TextBoxFor(m => m.MusteriAdi, new { @class = "form-control", required = "required" })
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Lokasyon (Örn: Nilüfer)</label>
+                    @Html.TextBoxFor(m => m.Lokasyon, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">İşlem Hareketi (Örn: WhatsApp'tan teklif aldı)</label>
+                @Html.TextBoxFor(m => m.Islem, new { @class = "form-control", required = "required" })
+            </div>
+            <div class="row align-items-end">
+                <div class="col-md-3 mb-3">
+                    <label class="form-label fw-bold">Zaman</label>
+                    <div class="input-group">
+                        @Html.TextBoxFor(m => m.Zaman, new { @class = "form-control" })
+                    </div>
+                    <small class="text-muted">Boş bırakırsanız sistem kendi saatini kullanır.</small>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label fw-bold">Sıra No</label>
+                    @Html.TextBoxFor(m => m.Sira, new { @class = "form-control", type = "number", min = "1", required = "required" })
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label fw-bold">Tip (İkon)</label>
+                    <select name="Tip" class="form-select" required>
+                        <option value="randevu" @(Model.Tip == "randevu" ? "selected" : "")>Randevu Aldı (Mavi Takvim)</option>
+                        <option value="tamam" @(Model.Tip == "tamam" ? "selected" : "")>İşlem Tamam (Yeşil Tik)</option>
+                        <option value="bekliyor" @(Model.Tip == "bekliyor" ? "selected" : "")>Talep Bekliyor (Sarı Saat)</option>
+                        <option value="whatsapp" @(Model.Tip == "whatsapp" ? "selected" : "")>WhatsApp (Yeşil İkon)</option>
+                        <option value="yildiz" @(Model.Tip == "yildiz" ? "selected" : "")>Yıldız (5 Sarı Yıldız)</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="form-check form-switch fs-5 pb-1">
+                        @Html.CheckBoxFor(m => m.AktifMi, new { @class = "form-check-input", role = "switch" })
+                        <label class="form-check-label ms-2" for="AktifMi">Aktif</label>
+                    </div>
+                </div>
+            </div>
+            <hr />
+            <div class="d-flex justify-content-between">
+                <a href="/Admin/SosyalKanit/Index" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Geri Dön</a>
+                <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Güncelle</button>
+            </div>
+        }
+    </div>
+</div>

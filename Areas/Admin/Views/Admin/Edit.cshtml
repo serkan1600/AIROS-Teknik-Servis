@@ -1,0 +1,66 @@
+@model AIROSWEB.DAL.Db.TblAdmin
+@{
+    ViewBag.Title = "Yönetici Düzenle";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 bg-white">
+                <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-edit me-2"></i> Yönetici Yetki Düzenleme</h6>
+            </div>
+            <div class="card-body">
+                @using (Html.BeginForm())
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.HiddenFor(x => x.Id)
+                    @Html.ValidationSummary(true, "", new { @class = "text-danger mb-3" })
+
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Kullanıcı Adı <span class="text-danger">*</span></label>
+                        @Html.TextBoxFor(x => x.KullaniciAdi, new { @class = "form-control", required = "required" })
+                        @Html.ValidationMessageFor(x => x.KullaniciAdi, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold text-warning">Şifre (Değiştirmek için giriniz)</label>
+                        <input type="password" name="Sifre" id="Sifre" class="form-control" placeholder="Aynı kalması isin boş bırakın..." />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">E-Posta (İsteğe Bağlı)</label>
+                        @Html.TextBoxFor(x => x.Email, new { @class = "form-control", type = "email" })
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label font-weight-bold">Personel Yetkisi (Rolü) <span class="text-danger">*</span></label>
+                        <select name="Rol" class="form-select border-info" required>
+                            <option value="Admin" @(Model.Rol == "Admin" ? "selected" : "")>Tam Yetkili Portal Yöneticisi (Admin)</option>
+                            <option value="Teknisyen" @(Model.Rol == "Teknisyen" ? "selected" : "")>Sahadaki Teknisyen / Ustabaşı</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-check form-switch ps-0 text-start">
+                            @{
+                                var isChecked = Model.AktifMi == true ? "checked" : "";
+                            }
+                            <input class="form-check-input ms-0 me-2" type="checkbox" role="switch" id="AktifMi" name="AktifMi" value="true" @isChecked>
+                            <label class="form-check-label fw-bold" for="AktifMi">Personel Sistemi Kullanabilsin (Aktif)</label>
+                            <small class="text-muted d-block mt-1">İşten ayrılan personeli pasif konuma alabilirsiniz.</small>
+                        </div>
+                    </div>
+
+                    <hr />
+                    <button type="submit" class="btn btn-primary fw-bold w-100">
+                        <i class="fas fa-save me-2"></i> Değişiklikleri Uygula
+                    </button>
+                    <div class="text-center mt-3">
+                        <a href="@Url.Action("Index")" class="text-muted text-decoration-none">Listeye Geri Dön</a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

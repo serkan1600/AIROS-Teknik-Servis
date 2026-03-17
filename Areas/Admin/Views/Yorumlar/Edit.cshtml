@@ -1,0 +1,102 @@
+@model AIROSWEB.DAL.Db.TblMusteriYorumlari
+@{
+    ViewBag.Title = "Yorum Düzenle";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-warning text-dark">
+        <h4 class="mb-0"><i class="fas fa-edit"></i> Yorum Düzenle</h4>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm("Edit", "Yorumlar", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.Id)
+            @Html.HiddenFor(m => m.AktifMi)
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Ad Soyad</label>
+                    <input type="text" name="AdSoyad" value="@Model.AdSoyad" class="form-control" required />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Meslek / Ünvan</label>
+                    <input type="text" name="Meslek" value="@Model.Meslek" class="form-control" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Görsel (Opsiyonel)</label>
+                    <div class="input-group">
+                        <input type="text" id="ResimYolu" name="ResimYolu" value="@Model.ResimYolu" class="form-control" placeholder="Resim Yolu" />
+                        <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="uploadImage(this)" />
+                        <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('fileInput').click()">
+                            <i class="fas fa-upload"></i> Yükle
+                        </button>
+                    </div>
+                    <div id="preview" class="mt-2 text-center">
+                        @if(!string.IsNullOrEmpty(Model.ResimYolu)) {
+                            <img src="@Model.ResimYolu" style="max-height:100px; border-radius:50%;" />
+                        }
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Puan (1-5)</label>
+                    <select name="Puan" class="form-select">
+                        <option value="5" @(Model.Puan == 5 ? "selected" : "")>5 Yıldız</option>
+                        <option value="4" @(Model.Puan == 4 ? "selected" : "")>4 Yıldız</option>
+                        <option value="3" @(Model.Puan == 3 ? "selected" : "")>3 Yıldız</option>
+                        <option value="2" @(Model.Puan == 2 ? "selected" : "")>2 Yıldız</option>
+                        <option value="1" @(Model.Puan == 1 ? "selected" : "")>1 Yıldız</option>
+                    </select>
+                </div>
+                <div class="col-12 mb-3">
+                    <label class="form-label">Yorum (Editör)</label>
+                    @Html.TextAreaFor(m => m.Yorum, new { @class = "form-control", id = "editor" })
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Güncelle</button>
+            <a href="@Url.Action("Index", "Yorumlar")" class="btn btn-secondary">İptal</a>
+        }
+    </div>
+</div>
+
+@section scripts {
+    <!-- CKEditor 5 CDN -->
+    <script src="https://cdn.ckeditor.com/ckeditor5/38.0.1/classic/ckeditor.js"></script>
+    <script>
+        ClassicEditor
+            .create(document.querySelector('#editor'), {
+                toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', '|', 'insertTable', 'undo', 'redo'],
+                language: 'tr'
+            })
+            .catch(error => {
+                console.error(error);
+            });
+        function uploadImage(input) {
+            if (input.files && input.files[0]) {
+                var formData = new FormData();
+                formData.append("file", input.files[0]);
+                formData.append("__RequestVerificationToken", $('input[name="__RequestVerificationToken"]').val());
+
+                $.ajax({
+                    url: '/Admin/UploadSafe/Image',
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        if (response.success) {
+                            $("#ResimYolu").val(response.path);
+                            $("#preview").html('<img src="' + response.path + '" style="max-height:100px; border-radius:50%;" />');
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function () {
+                        alert("Yükleme sırasında hata oluştu.");
+                    }
+                });
+            }
+        }
+    </script>
+}

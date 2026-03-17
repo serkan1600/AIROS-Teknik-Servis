@@ -1,0 +1,182 @@
+@model AIROSWEB.DAL.Db.TblBlog
+@{
+    ViewBag.Title = "Yeni Blog Yazısı";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show mb-4">
+        <i class="fas fa-check-circle me-2"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show mb-4">
+        <i class="fas fa-exclamation-triangle me-2"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <h4 class="mb-0"><i class="fas fa-plus"></i> Yeni Blog Yazısı Ekle</h4>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm("Create", "Blog", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label class="form-label fw-bold">Başlık <span class="text-danger">*</span></label>
+                    @Html.TextBoxFor(m => m.Baslik, new { @class = "form-control", required = "required", placeholder = "Blog yazısının başlığı" })
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Kategori <span class="text-danger">*</span></label>
+                    @Html.DropDownListFor(m => m.KategoriId, (SelectList)ViewBag.Kategoriler, "Kategori Seçin", new { @class = "form-select", required = "required" })
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-bold">Slug (URL)</label>
+                    @Html.TextBoxFor(m => m.Slug, new { @class = "form-control", placeholder = "Otomatik oluşturulacak (isteğe bağlı)" })
+                    <small class="text-muted">Boş bırakırsanız başlıktan otomatik oluşturulur</small>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-bold">Özet</label>
+                    @Html.TextAreaFor(m => m.Ozet, new { @class = "form-control", rows = 2, placeholder = "Kısa özet (liste görünümünde gösterilir)" })
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-bold">İçerik <span class="text-danger">*</span></label>
+                    @Html.TextAreaFor(m => m.Icerik, new { @class = "form-control", rows = 10, id = "Icerik", placeholder = "Blog yazısının tam içeriği..." })
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Kapak Resmi</label>
+                    <div class="input-group">
+                        @Html.TextBoxFor(m => m.ResimYolu, new { @class = "form-control", id = "ResimYolu", placeholder = "/Uploads/resim.jpg", oninput = "updatePreview(this.value)" })
+                        <button type="button" class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                            <i class="fas fa-camera"></i> Resim Seç
+                        </button>
+                    </div>
+                    <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="uploadSafeImage(this)" />
+                    <small class="text-muted">Manuel yol girebilir veya bilgisayardan seçebilirsiniz.</small>
+                    <div id="previewBox" class="mt-2 border rounded p-1 text-center bg-light" style="min-height: 100px; display: flex; align-items: center; justify-content: center;">
+                        <img id="resimPreview" src="/Content/Images/no-image.png" class="img-fluid rounded" style="max-height: 100px; display: none;" />
+                        <span id="previewText" style="display: block;" class="small text-muted">Önizleme Yok</span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Yazar</label>
+                    @Html.TextBoxFor(m => m.Yazar, new { @class = "form-control", placeholder = "Yazar adı" })
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Meta Title (SEO)</label>
+                    @Html.TextBoxFor(m => m.MetaTitle, new { @class = "form-control", placeholder = "Arama motorları için başlık" })
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Meta Description (SEO)</label>
+                    @Html.TextBoxFor(m => m.MetaDescription, new { @class = "form-control", placeholder = "Arama motorları için açıklama" })
+                </div>
+                <div class="col-md-12">
+                     <label class="form-label fw-bold">Anahtar Kelimeler (Keywords)</label>
+                     @Html.TextBoxFor(m => m.Keywords, new { @class = "form-control", placeholder = "virgül ile ayırın" })
+                </div>
+                <div class="col-12">
+                    <div class="form-check form-switch">
+                        @Html.CheckBoxFor(m => m.AktifMi, new { @class = "form-check-input", @checked = "checked" })
+                        <label class="form-check-label">Yayınla</label>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4" />
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> Kaydet
+                </button>
+                <a href="@Url.Action("Index")" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> İptal
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@section scripts {
+    <!-- CKEditor 5 CDN -->
+    <script src="https://cdn.ckeditor.com/ckeditor5/38.0.1/classic/ckeditor.js"></script>
+
+    <script>
+        ClassicEditor
+            .create(document.querySelector('#Icerik'), {
+                toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', '|', 'insertTable', 'undo', 'redo'],
+                language: 'tr'
+            })
+            .catch(error => {
+                console.error(error);
+            });
+
+        function updatePreview(url) {
+            const img = document.getElementById('resimPreview');
+            const text = document.getElementById('previewText');
+            if (url && url.length > 2) {
+                img.src = url;
+                img.style.display = 'block';
+                text.style.display = 'none';
+            } else {
+                img.style.display = 'none';
+                text.style.display = 'block';
+            }
+        }
+
+        function uploadSafeImage(input) {
+            if (input.files && input.files[0]) {
+                const formData = new FormData();
+                formData.append('file', input.files[0]);
+                
+                // Add Anti-Forgery Token
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                formData.append('__RequestVerificationToken', token);
+
+                const group = input.previousElementSibling;
+                const btn = group.querySelector('button');
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+                btn.disabled = true;
+
+                fetch('@Url.Action("Image", "UploadSafe", new { area = "Admin" })', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(r => {
+                    if (!r.ok) throw new Error('Sunucu hatası: ' + r.status);
+                    return r.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        const pathInput = document.getElementById('ResimYolu');
+                        if (pathInput) {
+                            pathInput.value = data.path;
+                            updatePreview(data.path);
+                        } else {
+                            console.error('ResimYolu input bulunamadı!');
+                            alert('Hata: Form alanı bulunamadı ama resim yüklendi: ' + data.path);
+                        }
+                    } else {
+                        alert('Hata: ' + data.message);
+                    }
+                })
+                .catch(e => {
+                    console.error(e);
+                    alert('Yükleme başarısız oldu: ' + e.message);
+                })
+                .finally(() => {
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                });
+            }
+        }
+    </script>
+}

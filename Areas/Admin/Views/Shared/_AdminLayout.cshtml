@@ -1,0 +1,586 @@
+@using System.Text
+@{
+    // 🔒 TÜRKÇE KARAKTER GARANTİSİ
+    Response.ContentEncoding = Encoding.UTF8;
+    Response.Charset = "utf-8";
+    Layout = null;
+
+    // Bildirimler için Global DB Bağlantısı
+    var dbContext = new AIROSWEB.DAL.Db.AirosTeknikServisEntities();
+    var okunmamisSayisi = dbContext.TblMesajlar.Count(x => !x.Okundu);
+    var randevuSayisi = dbContext.TblRandevular.Count(x => x.Durum == "Beklemede");
+    var bekleyenMusteriYorum = dbContext.TblMusteriYorumlari.Count(x => !x.AktifMi);
+    var bekleyenYorum = dbContext.TblBlogYorum.Count(x => !x.OnayliMi);
+    var sonAbone = dbContext.TblNewsletter.Count(x => !x.Okundu);
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+   
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Language" content="tr" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AIROS Admin Panel</title>
+
+    <!-- CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+
+
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #212529;
+            --sidebar-bg: #343a40;
+            --sidebar-header: #212529;
+            --sidebar-text: #adb5bd;
+            --border-color: #dee2e6;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a1d21;
+            --card-bg: #2b3035;
+            --text-color: #f8f9fa;
+            --sidebar-bg: #111418;
+            --sidebar-header: #000000;
+            --sidebar-text: #9eb1c1;
+            --border-color: #495057;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .card { background-color: var(--card-bg); border-color: var(--border-color); color: var(--text-color); }
+        .table { color: var(--text-color); }
+        .form-control, .form-select { 
+            background-color: var(--card-bg); 
+            border-color: var(--border-color); 
+            color: var(--text-color); 
+        }
+        .form-control:focus { background-color: var(--card-bg); color: var(--text-color); }
+
+        .sidebar {
+            width: 250px;
+            background: var(--sidebar-bg);
+            color: white;
+            height: 100vh;
+            transition: all 0.3s;
+            position: fixed;
+            overflow-y: auto;
+            overflow-x: hidden;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: var(--sidebar-header);
+            text-align: center;
+        }
+
+        .sidebar-menu {
+            padding: 20px 0 40px 0;
+        }
+
+        .sidebar-menu a {
+            display: block;
+            padding: 12px 20px;
+            color: var(--sidebar-text);
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background: #0d6efd;
+            color: white;
+            padding-left: 25px;
+        }
+
+        .content {
+            margin-left: 250px;
+            width: 100%;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .top-navbar {
+            background-color: var(--card-bg) !important;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        @@media (max-width: 768px) {
+            .sidebar { margin-left: -250px; }
+            .sidebar.active { margin-left: 0; }
+            .content { margin-left: 0; }
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <a href="@Url.Action("Index", "Dashboard")" class="text-white text-decoration-none">
+                <h4>AIROS PANEL</h4>
+            </a>
+            <small>Yönetim Sistemi</small>
+        </div>
+
+        <!-- MENU SEARCH -->
+        <div class="px-3 mb-2">
+            <input type="text" id="menuSearch" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="Menüde Ara..." />
+        </div>
+
+        <div class="sidebar-menu" id="sidebarMenu">
+            <!-- GENEL BAKIŞ -->
+            <div class="px-3 py-2 text-white-50 small fw-bold text-uppercase ls-1 param-header">Genel Bakış</div>
+            <a href="@Url.Action("Index", "Dashboard")"
+               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" ? "active" : "")">
+                <i class="fas fa-chart-line me-2"></i> Dashboard
+            </a>
+
+            <!-- ÖNCESİ VE SONRASI / PROJELER -->
+            <div class="px-3 py-2 mt-3 text-white-50 small fw-bold text-uppercase ls-1 param-header text-warning">Karşılaştırma Vitrini</div>
+            <a href="@Url.Action("Index", "Icerik", new { bolum = "OncesiSonrasi" })"
+               class="@(Request.QueryString["bolum"] == "OncesiSonrasi" ? "active" : "") fw-bold text-white">
+                <i class="fas fa-images me-2 text-warning"></i> 1. Resim Yönetimi
+            </a>
+            <a href="@Url.Action("Index", "Icerik", new { bolum = "OncesiSonrasiBaslik" })"
+               class="@(Request.QueryString["bolum"] == "OncesiSonrasiBaslik" ? "active" : "") fw-bold text-white">
+                <i class="fas fa-font me-2 text-warning"></i> 2. Üst Yazı (Başlık)
+            </a>
+            <a href="@Url.Action("Index", "Icerik", new { bolum = "OncesiSonrasiAltYazi" })"
+               class="@(Request.QueryString["bolum"] == "OncesiSonrasiAltYazi" ? "active" : "") fw-bold text-white">
+                <i class="fas fa-quote-right me-2 text-warning"></i> 3. Alt Yazı (%30 Tasarruf)
+            </a>
+
+            <!-- İLETİŞİM & TALEPLER -->
+            <div class="px-3 py-2 mt-3 text-white-50 small fw-bold text-uppercase ls-1 param-header">&#304;leti&#351;im & Talepler</div>
+            
+            @if (Session["Rol"] != null && Session["Rol"].ToString() == "Admin")
+            {
+                <a href="@Url.Action("Index", "Mesajlar")"
+                   class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Mesajlar" ? "active" : "")">
+                    <i class="fas fa-envelope me-2"></i> Mesajlar
+                    @{
+                        if (okunmamisSayisi > 0)
+                        {
+                            <span class="badge bg-danger rounded-pill ms-2 animate__animated animate__pulse animate__infinite" style="font-size: 0.7rem;">@okunmamisSayisi</span>
+                        }
+                    }
+                </a>
+            }
+
+            <a href="@Url.Action("Index", "Randevular")"
+               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Randevular" ? "active" : "")">
+                <i class="fas fa-calendar-check me-2"></i> Randevu Y&#246;netimi
+                @{
+                    if (randevuSayisi > 0)
+                    {
+                        <span class="badge bg-warning text-dark rounded-pill ms-2" style="font-size: 0.7rem;">@randevuSayisi</span>
+                    }
+                }
+            </a>
+
+            @if (Session["Rol"] != null && Session["Rol"].ToString() == "Admin")
+            {
+            <!-- VİTRİN & GALERİ -->
+            <div class="px-3 py-2 mt-3 text-white-50 small fw-bold text-uppercase ls-1 param-header">Vitrin & Galeri</div>
+            <a href="@Url.Action("Index", "Icerik", new { area = "Admin", bolum = "Hero" })"
+               class="@(Request.QueryString["bolum"] == "Hero" ? "active" : "")">
+                <i class="fas fa-images me-2"></i> Slider Y&#246;netimi
+            </a>
+
+            <a href="@Url.Action("Index", "Galeri")"
+               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Galeri" ? "active" : "")">
+                <i class="fas fa-camera-retro me-2"></i> Galeri / Projeler
+            </a>
+
+            <a href="@Url.Action("Index", "Markalar")"
+               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Markalar" ? "active" : "")">
+                <i class="fas fa-tags me-2"></i> Markalar
+            </a>
+
+            <a href="@Url.Action("Index", "Yorumlar")"
+               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Yorumlar" ? "active" : "")">
+                <i class="fas fa-comments me-2"></i> M&#252;&#351;teri Yorumlar&#305;
+                @{
+                    if (bekleyenMusteriYorum > 0)
+                    {
+                        <span class="badge bg-warning text-dark rounded-pill ms-2" style="font-size: 0.7rem;">@bekleyenMusteriYorum</span>
+                    }
+                }
+            </a>
+
+            <!-- KURUMSAL & İÇERİK -->
+            <div class="px-3 py-2 mt-3 text-white-50 small fw-bold text-uppercase ls-1 param-header">Kurumsal & &#304;&#231;erik</div>
+            <a href="@Url.Action("Index", "Sayfa")"
+               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Sayfa" && ViewContext.RouteData.Values["action"]?.ToString() != "Create" ? "active" : "")">
+                <i class="fas fa-bars me-2"></i> Sayfalar / Menüler
+            </a>
+            
+            <a href="@Url.Action("Create", "Sayfa")"
+               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Sayfa" && ViewContext.RouteData.Values["action"]?.ToString() == "Create" ? "active" : "")">
+                <i class="fas fa-plus-circle me-2"></i> Yeni Sayfa Ekle
+            </a>
+
+            <a href="@Url.Action("Index", "Hizmetler")"
+               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Hizmetler" ? "active" : "")">
+                <i class="fas fa-tools me-2"></i> Hizmetler
+            </a>
+
+            <a href="@Url.Action("Index", "Fiyatlar")"
+               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Fiyatlar" ? "active" : "")">
+                <i class="fas fa-money-bill-wave me-2"></i> Fiyat & Arıza Sihirbazı
+            </a>
+
+            <a href="@Url.Action("Index", "Icerik")"
+               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Icerik" && string.IsNullOrEmpty(Request.QueryString["bolum"]) ? "active" : "")">
+                <i class="fas fa-layer-group me-2"></i> İçerik Yönetimi (Tümü)
+            </a>
+
+            <a href="@Url.Action("Index", "Icerik", new { bolum = "HakkimizdaAnasayfa" })"
+               class="@(Request.QueryString["bolum"] == "HakkimizdaAnasayfa" ? "active" : "")">
+                <i class="fas fa-info-circle me-2"></i> Hakkımızda Yazıları
+            </a>
+
+            <a href="@Url.Action("Index", "Icerik", new { bolum = "Surec" })"
+               class="@(Request.QueryString["bolum"] == "Surec" ? "active" : "")">
+                <i class="fas fa-step-forward me-2"></i> Süreç / Nasıl Çalışır
+            </a>
+
+            <a href="@Url.Action("Index", "Icerik", new { bolum = "CTA" })"
+               class="@(Request.QueryString["bolum"] == "CTA" ? "active" : "")">
+                <i class="fas fa-bullhorn me-2"></i> Çağrı Alanı (CTA)
+            </a>
+            
+
+
+            <!-- BÖLGELER & YEREL SEO -->
+            <div class="px-3 py-2 mt-3 text-white-50 small fw-bold text-uppercase ls-1 param-header">B&#246;lgeler & Yerel SEO</div>
+            <a href="@Url.Action("Index", "HizmetBolgeleri")"
+               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "HizmetBolgeleri" ? "active" : "")">
+                <i class="fas fa-map-marked-alt me-2"></i> &#304;l&#231;e / B&#246;lge Listesi
+            </a>
+            <a href="@Url.Action("Index", "Icerik", new { bolum = "BolgelerSayfasi" })"
+               class="@(Request.QueryString["bolum"] == "BolgelerSayfasi" ? "active" : "")">
+                <i class="fas fa-pager me-2"></i> B&#246;lgeler Sayfa Tasar&#305;m&#305;
+            </a>
+            <a href="@Url.Action("Index", "Icerik", new { bolum = "BolgeOzellik" })"
+               class="@(Request.QueryString["bolum"] == "BolgeOzellik" ? "active" : "")">
+                <i class="fas fa-boxes me-2"></i> Bölge Özellik Kutuları
+            </a>
+
+            <a href="@Url.Action("Index", "Blog")"
+               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Blog" ? "active" : "")">
+                <i class="fas fa-blog me-2"></i> Blog Yaz&#305;lar&#305;
+            </a>
+
+            <a href="@Url.Action("Index", "BlogKategori")"
+               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "BlogKategori" ? "active" : "")">
+                <i class="fas fa-folder-open me-2"></i> Blog Kategorileri
+            </a>
+
+            <a href="@Url.Action("Index", "BlogYorum")"
+               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "BlogYorum" ? "active" : "")">
+                <i class="fas fa-comment-dots me-2"></i> Blog Yorumlar&#305;
+                @{
+                    if (bekleyenYorum > 0)
+                    {
+                        <span class="badge bg-info text-dark rounded-pill ms-2" style="font-size: 0.7rem;">@bekleyenYorum</span>
+                    }
+                }
+            </a>
+
+            <a href="@Url.Action("Index", "SSS")"
+               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "SSS" ? "active" : "")">
+                <i class="fas fa-question-circle me-2"></i> SSS
+            </a>
+
+            <!-- PAZARLAMA & TANITIM -->
+            <div class="px-3 py-2 mt-3 text-white-50 small fw-bold text-uppercase ls-1 param-header">Pazarlama & Tanıtım</div>
+            <a href="@Url.Action("Popup", "Ayarlar")"
+               class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Popup" ? "active" : "")">
+                <i class="fas fa-bullhorn me-2"></i> Popup Kampanya
+            </a>
+            <a href="@Url.Action("Index", "SosyalKanit")"
+               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "SosyalKanit" ? "active" : "")">
+                <i class="fas fa-users-cog me-2"></i> Sosyal Kanıt Bildirimleri
+            </a>
+            <a href="@Url.Action("Index", "Kuponlar")"
+               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Kuponlar" ? "active" : "")">
+                <i class="fas fa-ticket-alt me-2"></i> İndirim Kuponları
+            </a>
+            <a href="@Url.Action("Index", "Newsletter")"
+               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Newsletter" ? "active" : "")">
+                <i class="fas fa-envelope-open-text me-2"></i> E-Bülten Aboneleri
+                @{
+                    if (sonAbone > 0)
+                    {
+                        <span class="badge bg-success rounded-pill ms-2" style="font-size: 0.7rem;">@sonAbone</span>
+                    }
+                }
+            </a>
+
+            <!-- SİSTEM & GÜVENLİK -->
+            <div class="px-3 py-2 mt-3 text-white-50 small fw-bold text-uppercase ls-1 param-header">Sistem & G&#252;venlik</div>
+            
+            <!-- GÜNLÜKLER (LOGS) -->
+            <a href="@Url.Action("Audit", "Logs")"
+               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Logs" && ViewContext.RouteData.Values["action"]?.ToString() == "Audit" ? "active" : "") text-info">
+                <i class="fas fa-history me-2"></i> İşlem Günlükleri (Audit)
+            </a>
+            <a href="@Url.Action("Security", "Logs")"
+               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Logs" && ViewContext.RouteData.Values["action"]?.ToString() == "Security" ? "active" : "") text-danger">
+                <i class="fas fa-shield-alt me-2"></i> Güvenlik Günlükleri
+            </a>
+
+            <a href="@Url.Action("Index", "Profil")"
+               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Profil" ? "active" : "")">
+                <i class="fas fa-user-shield me-2"></i> Admin Profil Ayarlar&#305;
+            </a>
+
+            <a href="@Url.Action("Index", "Ayarlar")"
+               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Ayarlar" ? "active" : "")">
+                <i class="fas fa-cogs me-2"></i> Genel Ayarlar
+            </a>
+
+            <a href="@Url.Action("Index", "Admin")"
+               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Admin" && ViewContext.RouteData.Values["action"]?.ToString() != "Profil" ? "active" : "")">
+                <i class="fas fa-users-cog me-2"></i> Yöneticiler / Personeller
+            </a>
+            
+            <a href="@Url.Action("Index", "Seo")"
+               class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Seo" ? "active" : "")">
+                <i class="fas fa-globe me-2"></i> SEO Ayarlar&#305;
+            </a>
+
+            <a href="@Url.Action("Index", "SeoFix", new { area = "Admin" })" target="_blank" class="text-info">
+                <i class="fas fa-magic me-2"></i> SEO Otomatik Onar
+            </a>
+            }
+
+            <div class="mt-4 border-top border-secondary pt-2">
+                <a href="/" target="_blank" class="text-warning">
+                    <i class="fas fa-external-link-alt me-2"></i> Siteye Git
+                </a>
+
+                <a href="@Url.Action("Index", "Setup", new { area = "Admin" })" target="_blank" class="text-warning text-decoration-none px-3 py-2 d-block">
+                    <i class="fas fa-tools me-2"></i> Sistem Kurulumu / Onar
+                </a>
+
+                <a href="@Url.Action("Logout", "Login")" class="text-danger">
+                    <i class="fas fa-sign-out-alt me-2"></i> Çıkış Yap
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- CONTENT -->
+    <div class="content">
+        <nav class="navbar navbar-expand navbar-light top-navbar mb-4 rounded px-4 shadow-sm">
+            <button type="button" id="sidebarCollapse" class="btn btn-outline-secondary d-md-none me-3">
+                <i class="fas fa-bars"></i>
+            </button>
+            <span class="fw-bold text-muted d-none d-sm-inline">
+                <i class="fas fa-user-circle me-1"></i> @Context.User.Identity.Name
+            </span>
+            
+            <div class="ms-auto d-flex align-items-center">
+                <!-- Bildirim Özeti -->
+                <div class="dropdown me-3">
+                    @{
+                        var totalNotifications = okunmamisSayisi + randevuSayisi + bekleyenYorum + sonAbone + bekleyenMusteriYorum;
+                    }
+                    <button class="btn btn-light position-relative rounded-circle shadow-sm" type="button" id="notifDrop" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-bell text-primary"></i>
+                        @if (totalNotifications > 0)
+                        {
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light animate__animated animate__swing animate__infinite">
+                                @totalNotifications
+                            </span>
+                        }
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 py-0" aria-labelledby="notifDrop" style="min-width: 250px;">
+                        <li class="p-3 border-bottom bg-primary text-white rounded-top">
+                            <h6 class="mb-0">Bildirimler</h6>
+                        </li>
+                        @if (okunmamisSayisi > 0)
+                        {
+                            <li><a class="dropdown-item p-3 border-bottom" href="/Admin/Mesajlar">
+                                <div class="d-flex align-items-center text-danger">
+                                    <i class="fas fa-envelope me-3"></i>
+                                    <div>
+                                        <div class="fw-bold">@okunmamisSayisi Yeni Mesaj</div>
+                                        <small class="text-muted">Okunmayı bekliyor</small>
+                                    </div>
+                                </div>
+                            </a></li>
+                        }
+                        @if (randevuSayisi > 0)
+                        {
+                            <li><a class="dropdown-item p-3 border-bottom" href="/Admin/Randevular">
+                                <div class="d-flex align-items-center text-warning">
+                                    <i class="fas fa-calendar-alt me-3"></i>
+                                    <div>
+                                        <div class="fw-bold">@randevuSayisi Yeni Randevu</div>
+                                        <small class="text-muted">Onay bekliyor</small>
+                                    </div>
+                                </div>
+                            </a></li>
+                        }
+                        @if (bekleyenMusteriYorum > 0)
+                        {
+                            <li><a class="dropdown-item p-3 border-bottom" href="/Admin/Yorumlar">
+                                <div class="d-flex align-items-center text-warning">
+                                    <i class="fas fa-star text-warning me-3"></i>
+                                    <div>
+                                        <div class="fw-bold">@bekleyenMusteriYorum Yeni Müşteri Yorumu</div>
+                                        <small class="text-muted">Onay bekliyor</small>
+                                    </div>
+                                </div>
+                            </a></li>
+                        }
+                        @if (bekleyenYorum > 0)
+                        {
+                            <li><a class="dropdown-item p-3" href="/Admin/BlogYorum">
+                                <div class="d-flex align-items-center text-info">
+                                    <i class="fas fa-comment-dots me-3"></i>
+                                    <div>
+                                        <div class="fw-bold">@bekleyenYorum Yeni Blog Yorumu</div>
+                                        <small class="text-muted">Onay bekliyor</small>
+                                    </div>
+                                </div>
+                            </a></li>
+                        }
+                        @if (sonAbone > 0)
+                        {
+                            <li><a class="dropdown-item p-3 border-bottom" href="/Admin/Newsletter">
+                                <div class="d-flex align-items-center text-success">
+                                    <i class="fas fa-users me-3"></i>
+                                    <div>
+                                        <div class="fw-bold">@sonAbone Yeni Abone</div>
+                                        <small class="text-muted">Bültene yeni kayıt</small>
+                                    </div>
+                                </div>
+                            </a></li>
+                        }
+                        @if (totalNotifications == 0)
+                        {
+                            <li class="p-4 text-center text-muted">Yeni bildirim bulunmuyor.</li>
+                        }
+                    </ul>
+                </div>
+
+                <!-- Theme Toggle -->
+                <button class="btn btn-link text-secondary me-3" id="adminThemeToggle" title="Karanlık/Aydınlık Mod">
+                    <i class="fas fa-moon"></i>
+                </button>
+
+                <a href="/" target="_blank" class="btn btn-primary btn-sm rounded-pill px-3">
+                    <i class="fas fa-external-link-alt me-1"></i> Siteyi Gör
+                </a>
+            </div>
+        </nav>
+
+        @RenderBody()
+    </div>
+
+    <!-- JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Global Anti-Forgery Token for AJAX -->
+    <form id="__AjaxAntiForgeryForm" action="#" style="display:none;">
+        @Html.AntiForgeryToken()
+    </form>
+    <script>
+        $(document).ajaxSend(function (event, xhr, options) {
+            if (options.type.toUpperCase() === "POST") {
+                var token = $('input[name="__RequestVerificationToken"]').val();
+                if (token) {
+                    xhr.setRequestHeader("RequestVerificationToken", token);
+                }
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", function() {
+            // Theme Toggle Logic
+            const themeToggle = document.getElementById('adminThemeToggle');
+            const html = document.documentElement;
+            const icon = themeToggle ? themeToggle.querySelector('i') : null;
+
+            function setTheme(theme) {
+                if (theme === 'dark') {
+                    html.setAttribute('data-theme', 'dark');
+                    if(icon) { icon.classList.replace('fa-moon', 'fa-sun'); }
+                } else {
+                    html.removeAttribute('data-theme');
+                    if(icon) { icon.classList.replace('fa-sun', 'fa-moon'); }
+                }
+                localStorage.setItem('admin-theme', theme);
+            }
+
+            // Init theme
+            const savedTheme = localStorage.getItem('admin-theme') || 'light';
+            setTheme(savedTheme);
+
+            if (themeToggle) {
+                themeToggle.addEventListener('click', () => {
+                    const currentTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                    setTheme(currentTheme);
+                });
+            }
+
+            var toggleBtn = document.getElementById('sidebarCollapse');
+            if(toggleBtn) {
+                toggleBtn.addEventListener('click', function() {
+                    document.querySelector('.sidebar').classList.toggle('active');
+                });
+            }
+
+            // MENU SEARCH
+            var menuSearch = document.getElementById("menuSearch");
+            if(menuSearch) {
+                menuSearch.addEventListener("keyup", function() {
+                    var value = this.value.toLowerCase();
+                    var links = document.querySelectorAll("#sidebarMenu a");
+                    var headers = document.querySelectorAll(".param-header");
+
+                    links.forEach(function(link) {
+                        if(link.textContent.toLowerCase().indexOf(value) > -1) {
+                            link.style.display = "";
+                        } else {
+                            link.style.display = "none";
+                        }
+                    });
+
+                    if(value.length > 0) {
+                        headers.forEach(h => h.style.display = "none");
+                    } else {
+                        headers.forEach(h => h.style.display = "");
+                    }
+                });
+            }
+        });
+    </script>
+
+    @RenderSection("scripts", required: false)
+
+</body>
+</html>

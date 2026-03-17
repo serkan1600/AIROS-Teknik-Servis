@@ -1,0 +1,490 @@
+@{
+    ViewBag.Title = "Dashboard";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="fw-bold mb-0">
+            <i class="fas fa-chart-line text-primary"></i> Dashboard
+        </h2>
+        <p class="text-muted">Hoş geldiniz! İşte sitenizin genel durumu.</p>
+    </div>
+</div>
+
+<!-- Mesaj ve Randevu İstatistikleri (Kritik Bildirimler) -->
+<div class="row g-3 mb-4">
+    <!-- Randevular -->
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100 bg-primary text-white">
+            <div class="card-body text-center">
+                <div class="mb-2">
+                    <i class="fas fa-calendar-check fa-2x"></i>
+                </div>
+                <h3 class="fw-bold mb-0">@ViewBag.BekleyenRandevu</h3>
+                <p class="mb-0 opacity-75 small">Onay Bekleyen Randevu</p>
+                <a href="@Url.Action("Index", "Randevular", new { durum = "Beklemede" })" class="btn btn-sm btn-light mt-2 fw-bold text-primary">
+                    İncele <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Okunmamış Mesajlar -->
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100 bg-warning text-dark">
+            <div class="card-body text-center">
+                <div class="mb-2">
+                    <i class="fas fa-envelope fa-2x"></i>
+                </div>
+                <h3 class="fw-bold mb-0">@ViewBag.OkunmamisMesaj</h3>
+                <p class="mb-0 opacity-75 small">Yeni Mesaj</p>
+                <a href="@Url.Action("Index", "Mesajlar", new { durum = "okunmamis" })" class="btn btn-sm btn-dark mt-2 fw-bold">
+                    Oku <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toplam Randevu -->
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100 bg-white border-start border-primary border-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="fw-bold mb-0">@ViewBag.ToplamRandevu</h4>
+                        <p class="text-muted mb-0 small text-uppercase">Toplam Randevu</p>
+                    </div>
+                    <i class="fas fa-calendar-alt fa-2x text-primary opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bugünkü Randevular -->
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100 bg-white border-start border-success border-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="fw-bold mb-0">@ViewBag.BugunkuRandevu</h4>
+                        <p class="text-muted mb-0 small text-uppercase">Bugünkü Randevular</p>
+                    </div>
+                    <i class="fas fa-clock fa-2x text-success opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- İçerik İstatistikleri -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100 bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="card-body text-white text-center">
+                <i class="fas fa-wrench fa-2x mb-2"></i>
+                <h4 class="fw-bold mb-0">@ViewBag.AktifHizmet / @ViewBag.ToplamHizmet</h4>
+                <p class="mb-0 opacity-75">Hizmetler</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100 bg-gradient" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <div class="card-body text-white text-center">
+                <i class="fas fa-tags fa-2x mb-2"></i>
+                <h4 class="fw-bold mb-0">@ViewBag.AktifMarka / @ViewBag.ToplamMarka</h4>
+                <p class="mb-0 opacity-75">Markalar</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100 bg-gradient" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <div class="card-body text-white text-center">
+                <i class="fas fa-file-alt fa-2x mb-2"></i>
+                <h4 class="fw-bold mb-0">@ViewBag.AktifIcerik / @ViewBag.ToplamIcerik</h4>
+                <p class="mb-0 opacity-75">İçerikler</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100 bg-gradient" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+            <div class="card-body text-white text-center">
+                <i class="fas fa-file fa-2x mb-2"></i>
+                <h4 class="fw-bold mb-0">@ViewBag.AktifSayfa / @ViewBag.ToplamSayfa</h4>
+                <p class="mb-0 opacity-75">Sayfalar</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Grafikler (Charts) -->
+<div class="row mb-4">
+    <!-- Haftalık Randevu Grafiği -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold"><i class="fas fa-chart-area text-primary"></i> Haftalık Randevu İstatistiği</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-area" style="position: relative; height: 300px; width: 100%;">
+                    <canvas id="weeklyAppointmentsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hizmet Dağılımı -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0 fw-bold"><i class="fas fa-chart-pie text-success"></i> En Çok Talep Edilen Hizmetler</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-pie pt-4 pb-2" style="position: relative; height: 250px; width: 100%;">
+                    <canvas id="servicesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <!-- Aylık Servis Talepleri (Son 6 Ay) -->
+    <div class="col-lg-12">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0 fw-bold"><i class="fas fa-chart-bar text-warning"></i> Aylık Gelen Servis Talepleri (Son 6 Ay)</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-bar" style="position: relative; height: 350px; width: 100%;">
+                    <canvas id="monthlyAppointmentsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // 1. Haftalık Randevu Grafiği
+        var ctx1 = document.getElementById('weeklyAppointmentsChart').getContext('2d');
+        var weeklyChart = new Chart(ctx1, {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(Json.Encode(ViewBag.HaftalikRandevuLabels)),
+                datasets: [{
+                    label: 'Yeni Randevular',
+                    data: @Html.Raw(Json.Encode(ViewBag.HaftalikRandevuData)),
+                    borderColor: '#4e73df',
+                    backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                    pointRadius: 3,
+                    pointBackgroundColor: '#4e73df',
+                    pointBorderColor: '#4e73df',
+                    pointHoverRadius: 3,
+                    pointHoverBackgroundColor: '#4e73df',
+                    pointHoverBorderColor: '#4e73df',
+                    pointHitRadius: 10,
+                    pointBorderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                keepAspectRatio: false,
+                maintainAspectRatio: false,
+                layout: {
+                    padding: { left: 10, right: 25, top: 25, bottom: 0 }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false, drawBorder: false },
+                        ticks: { maxTicksLimit: 7 }
+                    },
+                    y: {
+                        ticks: { maxTicksLimit: 5, padding: 10, callback: function(value) { return value; } },
+                        grid: { color: "rgb(234, 236, 244)", zeroLineColor: "rgb(234, 236, 244)", drawBorder: false, borderDash: [2], zeroLineBorderDash: [2] }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: "rgb(255,255,255)",
+                        bodyColor: "#858796",
+                        titleColor: '#6e707e',
+                        borderColor: '#dddfeb',
+                        borderWidth: 1,
+                        padding: 15,
+                        displayColors: false,
+                        intersect: false,
+                        mode: 'index',
+                        caretPadding: 10,
+                    }
+                }
+            }
+        });
+
+        // 2. Hizmet Dağılımı Grafiği
+        var ctx2 = document.getElementById('servicesChart').getContext('2d');
+        var servicesChart = new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: @Html.Raw(Json.Encode(ViewBag.HizmetLabels)),
+                datasets: [{
+                    data: @Html.Raw(Json.Encode(ViewBag.HizmetData)),
+                    backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796'],
+                    hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf', '#dda20a', '#be2617', '#60616f'],
+                    hoverBorderColor: "rgba(234, 236, 244, 1)",
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                tooltips: {
+                    backgroundColor: "rgb(255,255,255)",
+                    bodyFontColor: "#858796",
+                    borderColor: '#dddfeb',
+                    borderWidth: 1,
+                    xPadding: 15,
+                    yPadding: 15,
+                    displayColors: false,
+                    caretPadding: 10,
+                },
+                plugins: {
+                    legend: { display: true, position: 'bottom' }
+                },
+                cutout: '70%',
+            }
+        });
+
+        // 3. Aylık Servis Talepleri Grafiği
+        var ctx3 = document.getElementById('monthlyAppointmentsChart').getContext('2d');
+        var monthlyChart = new Chart(ctx3, {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(Json.Encode(ViewBag.AylikRandevuLabels)),
+                datasets: [{
+                    label: 'Aylık Talepler',
+                    data: @Html.Raw(Json.Encode(ViewBag.AylikRandevuData)),
+                    backgroundColor: '#1cc88a',
+                    hoverBackgroundColor: '#17a673',
+                    borderColor: '#1cc88a',
+                    borderWidth: 1,
+                    borderRadius: 5,
+                    barPercentage: 0.5
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                layout: {
+                    padding: { left: 10, right: 25, top: 25, bottom: 0 }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false, drawBorder: false },
+                        ticks: { maxTicksLimit: 6 }
+                    },
+                    y: {
+                        ticks: { maxTicksLimit: 5, padding: 10 },
+                        grid: { color: "rgb(234, 236, 244)", zeroLineColor: "rgb(234, 236, 244)", drawBorder: false, borderDash: [2], zeroLineBorderDash: [2] }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: "rgb(255,255,255)",
+                        bodyColor: "#858796",
+                        titleColor: '#6e707e',
+                        borderColor: '#dddfeb',
+                        borderWidth: 1,
+                        padding: 15,
+                        displayColors: false,
+                        caretPadding: 10,
+                    }
+                }
+            }
+        });
+    });
+</script>
+
+<!-- Diğer Modüller -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-images fa-2x text-info mb-2"></i>
+                <h5 class="fw-bold mb-0">@ViewBag.AktifGaleri / @ViewBag.ToplamGaleri</h5>
+                <p class="text-muted mb-0 small">Galeri</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-blog fa-2x text-primary mb-2"></i>
+                <h5 class="fw-bold mb-0">@ViewBag.AktifBlog / @ViewBag.ToplamBlog</h5>
+                <p class="text-muted mb-0 small">Blog Yazıları</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-question-circle fa-2x text-warning mb-2"></i>
+                <h5 class="fw-bold mb-0">@ViewBag.AktifSSS / @ViewBag.ToplamSSS</h5>
+                <p class="text-muted mb-0 small">SSS</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-folder fa-2x text-secondary mb-2"></i>
+                <h5 class="fw-bold mb-0">@ViewBag.ToplamBlogKategori</h5>
+                <p class="text-muted mb-0 small">Blog Kategorileri</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Son Mesajlar & Yorumlar -->
+<div class="row">
+    <!-- Son Mesajlar -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold"><i class="fas fa-inbox text-primary"></i> Son Mesajlar</h5>
+                <a href="@Url.Action("Index", "Mesajlar")" class="btn btn-sm btn-outline-primary fw-bold">
+                    Tümünü Gör <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+            <div class="card-body p-0">
+                @if (ViewBag.SonMesajlar != null && ((List<AIROSWEB.DAL.Db.TblMesajlar>)ViewBag.SonMesajlar).Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <tbody>
+                                @foreach (var mesaj in (List<AIROSWEB.DAL.Db.TblMesajlar>)ViewBag.SonMesajlar)
+                                {
+                                    <tr class="@(!mesaj.Okundu ? "table-warning" : "")">
+                                        <td width="40" class="text-center align-middle">
+                                            @if (!mesaj.Okundu) { <i class="fas fa-circle text-warning small"></i> }
+                                            else { <i class="far fa-circle text-muted small"></i> }
+                                        </td>
+                                        <td>
+                                            <strong class="text-dark">@mesaj.AdSoyad</strong><br />
+                                            <small class="text-muted"><i class="fas fa-clock"></i> @mesaj.Tarih.ToString("dd.MM.yyyy")</small>
+                                        </td>
+                                        <td class="text-end align-middle">
+                                            <a href="@Url.Action("Details", "Mesajlar", new { id = mesaj.Id })" class="btn btn-sm btn-light">Oku</a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="p-4 text-center text-muted">
+                        <i class="fas fa-inbox fa-2x mb-2 opacity-50"></i>
+                        <p class="mb-0 small">Henüz mesaj bulunmuyor.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Bekleyen Yorumlar -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold">
+                    <i class="fas fa-star text-warning"></i> Onay Bekleyen Yorumlar 
+                    @if(ViewBag.BekleyenYorumSayisi > 0) { <span class="badge bg-danger ms-2">@ViewBag.BekleyenYorumSayisi</span> }
+                </h5>
+                <a href="@Url.Action("Index", "Yorumlar")" class="btn btn-sm btn-outline-warning fw-bold text-dark">
+                    Yönetime Git <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+            <div class="card-body p-0">
+                @if (ViewBag.BekleyenYorumlar != null && ((List<AIROSWEB.DAL.Db.TblMusteriYorumlari>)ViewBag.BekleyenYorumlar).Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <tbody>
+                                @foreach (var yorum in (List<AIROSWEB.DAL.Db.TblMusteriYorumlari>)ViewBag.BekleyenYorumlar)
+                                {
+                                    <tr>
+                                        <td>
+                                            <strong class="text-dark">@yorum.AdSoyad</strong> <span class="badge bg-secondary ms-1">@yorum.Puan <i class="fas fa-star text-warning small"></i></span><br />
+                                            <small class="text-muted text-truncate d-inline-block" style="max-width: 250px;">"@yorum.Yorum"</small>
+                                        </td>
+                                        <td class="text-end align-middle" width="120">
+                                            @using(Html.BeginForm("DurumDegistir", "Yorumlar", new { id = yorum.Id }, FormMethod.Post, new { @class = "d-inline" }))
+                                            {
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-success fw-bold" title="Yayınla"><i class="fas fa-check"></i> Onayla</button>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="p-4 text-center text-muted">
+                        <i class="fas fa-check-double fa-2x mb-2 text-success opacity-50"></i>
+                        <p class="mb-0 small">Onay bekleyen yorum bulunmuyor.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hızlı Erişim -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="fas fa-bolt"></i> Hızlı Erişim</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-md-2">
+                        <a href="@Url.Action("Index", "Icerik", new { bolum = "Hero" })" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-images"></i> Slider Yönetimi
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="@Url.Action("Index", "Hizmetler")" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-wrench"></i> Hizmetler
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="@Url.Action("Index", "Ayarlar")" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-cogs"></i> Site Ayarları
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="@Url.Action("Index", "SSS")" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-question-circle"></i> SSS Yönetimi
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        @using (Html.BeginForm("OptimizeImages", "Optimization", FormMethod.Post, new { id = "optimizeForm" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-success w-100" onclick="return confirm('Tüm resimleri optimize etmek istediğinizden emin misiniz? Bu işlem biraz zaman alabilir.');">
+                                <i class="fas fa-compress-alt"></i> 🚀 Resimleri Optimize Et (Hızlandır)
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
