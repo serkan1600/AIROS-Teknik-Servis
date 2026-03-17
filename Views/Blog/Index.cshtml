@@ -1,0 +1,130 @@
+@model AIROSWEB.Models.LayoutViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = ViewBag.ActiveCategory != null ? "Blog - " + ViewBag.ActiveCategory : "Blog & Makaleler";
+}
+
+<section class="page-header py-5 bg-dark text-white text-center" style="background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center;">
+    <div class="container animate__animated animate__fadeInDown">
+        <h1 class="display-4 fw-bold">@(ViewBag.ActiveCategory ?? "Bilgi Köşesi")</h1>
+        <p class="lead text-white-50">Teknik servis dünyasından ipuçları ve güncel bilgiler.</p>
+    </div>
+</section>
+
+<div class="container py-5">
+    <div class="row">
+        <!-- Blog List -->
+        <div class="col-lg-8 animate__animated animate__fadeInUp">
+            @if (Model.Bloglar != null && Model.Bloglar.Any())
+            {
+                <div class="row g-4">
+                    @foreach (var blog in Model.Bloglar)
+                    {
+                        <div class="col-12">
+                            <div class="card h-100 border-0 shadow-sm overflow-hidden blog-card-horizontal">
+                                <div class="row g-0">
+                                    <div class="col-md-4">
+                                        <div class="blog-img-wrapper h-100" style="min-height: 200px;">
+                                            <img src="@(string.IsNullOrEmpty(blog.ResimYolu) ? "https://via.placeholder.com/600x400?text=Airos+Blog" : blog.ResimYolu)" 
+                                                 class="img-fluid h-100 w-100" style="object-fit: cover;" alt="@blog.Baslik">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="card-body p-4">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <span class="badge bg-primary-soft text-primary me-3">
+                                                    @{
+                                                        var kat = Model.Kategoriler.FirstOrDefault(x => x.Id == blog.KategoriId);
+                                                        @(kat?.KategoriAdi ?? "Genel")
+                                                    }
+                                                </span>
+                                                <small class="text-muted"><i class="far fa-calendar-alt me-1"></i> @blog.YayinTarihi.ToString("dd MMMM yyyy")</small>
+                                            </div>
+                                            <h3 class="card-title fw-bold mb-3">
+                                                <a href="@Url.Action("Detay", "Blog", new { id = blog.Slug })" class="text-decoration-none text-dark hover-primary">
+                                                    @blog.Baslik
+                                                </a>
+                                            </h3>
+                                            <p class="card-text text-muted mb-4">
+                                                @blog.Ozet
+                                            </p>
+                                            <a href="@Url.Action("Detay", "Blog", new { id = blog.Slug })" class="btn btn-link p-0 text-decoration-none fw-bold">
+                                                Devamını Oku <i class="fas fa-arrow-right ms-2 small"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5 bg-white shadow-sm rounded-4 animate__animated animate__fadeIn">
+                    <div class="mb-4">
+                        <i class="fas fa-edit fa-5x text-primary opacity-25"></i>
+                    </div>
+                    <h2 class="fw-bold text-dark">Bilgi Yazıları Hazırlanıyor</h2>
+                    <p class="text-muted fs-5 px-md-5">Teknik servis dünyasından güncel bilgiler ve kombi/klima kullanım kılavuzları çok yakında sizlerle olacak.</p>
+                    <a href="/" class="btn btn-primary rounded-pill px-5 mt-4">Anasayfaya Dön</a>
+                </div>
+            }
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4 mt-5 mt-lg-0">
+            <div class="sticky-top" style="top: 100px;">
+                <!-- Kategori Widget -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="fw-bold mb-0">Kategoriler</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            <a href="@Url.Action("Index", "Blog")" class="list-group-item list-group-item-action @(ViewBag.ActiveCategory == null ? "active" : "")">
+                                Tüm Yazılar
+                            </a>
+                            @foreach (var kat in Model.Kategoriler)
+                            {
+                                string url;
+                                if (!string.IsNullOrEmpty(kat.Slug))
+                                {
+                                    url = Url.RouteUrl("BlogKategoriSeo", new { slug = kat.Slug });
+                                }
+                                else
+                                {
+                                    url = Url.Action("Index", "Blog", new { kategoriId = kat.Id });
+                                }
+                                
+                                <a href="@url" 
+                                   class="list-group-item list-group-item-action @(ViewBag.ActiveCategory == kat.KategoriAdi ? "active" : "")">
+                                    @kat.KategoriAdi
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Call to Action Widget -->
+                <div class="card border-0 bg-primary text-white p-4 rounded-4 shadow-lg overflow-hidden position-relative">
+                    <div class="position-relative z-index-2">
+                        <h4 class="fw-bold mb-3">Hızlı Çözüm Mü Lazım?</h4>
+                        <p class="mb-4 opacity-75">Kombi veya klimanızda arıza mı var? Uzman ekibimiz bir telefon uzağınızda.</p>
+                        <a href="tel:@(Model.Ayarlar?.Telefon?.Replace(" ", "") ?? "05010022516")" class="btn btn-light rounded-pill w-100 fw-bold">
+                            <i class="fas fa-phone-alt me-2"></i>@(Model.Ayarlar?.Telefon ?? "0 501 002 25 16")
+                        </a>
+                    </div>
+                    <i class="fas fa-tools position-absolute bottom-0 end-0 display-1 opacity-10 mb-n3 me-n3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-primary-soft { background-color: rgba(13, 110, 253, 0.1); }
+    .blog-card-horizontal:hover { transform: translateY(-5px); transition: 0.3s; box-shadow: 0 .5rem 1.5rem rgba(0,0,0,.1)!important; }
+    .hover-primary:hover { color: #0d6efd !important; }
+    .list-group-item.active { background-color: #0d6efd; border-color: #0d6efd; }
+</style>

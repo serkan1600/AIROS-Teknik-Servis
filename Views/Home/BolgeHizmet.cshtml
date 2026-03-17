@@ -1,0 +1,171 @@
+@model AIROSWEB.Models.LayoutViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var bolgeAdi = ViewBag.BolgeAdi as string;
+    var bolgeAciklama = ViewBag.BolgeAciklama as string;
+    var ayar = Model.Ayarlar;
+    ViewBag.Keywords = $"{bolgeAdi} kombi servisi, {bolgeAdi} klima servisi, {bolgeAdi} teknik servis, {bolgeAdi} kombi tamiri";
+}
+
+<!-- JSON-LD Structured Data for Local SEO -->
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@@type": "Service",
+  "serviceType": "Teknik Servis",
+  "provider": {
+    "@@type": "LocalBusiness",
+    "name": "@(ayar?.SiteBaslik ?? "AIROS Teknik Servis")",
+    "image": "@(Request.Url.GetLeftPart(UriPartial.Authority))@(ayar?.LogoYolu ?? "/Content/Images/logo.png")",
+    "telephone": "@(ayar?.Telefon)",
+    "address": {
+      "@@type": "PostalAddress",
+      "addressLocality": "Bursa",
+      "addressRegion": "TR"
+    }
+  },
+  "areaServed": {
+    "@@type": "Place",
+    "name": "@bolgeAdi"
+  },
+  "description": "@(bolgeAciklama ?? $"{bolgeAdi} bölgesinde profesyonel kombi ve klima teknik servis hizmeti.")"
+}
+</script>
+
+<!-- Page Header -->
+<section class="page-header py-5 bg-dark text-white text-center position-relative overflow-hidden">
+    <div class="header-bg-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; background: url('https://images.unsplash.com/photo-1581094794329-c8112a89af12?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'); background-size: cover; background-position: center; opacity: 0.3; z-index: 1;"></div>
+    <div class="container position-relative animate__animated animate__fadeInDown" style="z-index: 2;">
+        <h1 class="display-4 fw-bold">@bolgeAdi Kombi ve Klima Servisi</h1>
+        <p class="lead">@bolgeAdi Bölgesinde Profesyonel Teknik Çözümler</p>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb justify-content-center">
+                <li class="breadcrumb-item"><a href="/" class="text-white">Anasayfa</a></li>
+                <li class="breadcrumb-item active text-white-50" aria-current="page">@bolgeAdi</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<section class="section-padding py-5">
+    <div class="container">
+        <div class="row g-5">
+            <div class="col-lg-8">
+                <div class="content-wrapper animate__animated animate__fadeInLeft">
+                    <h2 class="fw-bold text-primary mb-4">@bolgeAdi İçin Teknik Servis Hizmetimiz</h2>
+                    
+                    @if (!string.IsNullOrEmpty(bolgeAciklama))
+                    {
+                        <div class="description mb-4 fs-5 text-muted leading-relaxed">
+                            @Html.Raw(bolgeAciklama)
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="fs-5 text-muted mb-4">
+                            <strong>@bolgeAdi</strong> bölgesinde kombi, klima ve beyaz eşya servis ihtiyaçlarınız için profesyonel kadromuzla yanınızdayız. 
+                            Yılların verdiği tecrübe ve Bursa genelindeki yaygın servis ağımızla, cihazlarınızdaki arızaları en kısa sürede yerinde gideriyoruz.
+                        </p>
+                    }
+
+                    @if (ViewBag.BolgeIcerik != null && !string.IsNullOrEmpty(ViewBag.BolgeIcerik.ToString()))
+                    {
+                        <div class="detailed-content mb-5 border-top pt-5">
+                            @Html.Raw(ViewBag.BolgeIcerik)
+                        </div>
+                    }
+
+                    @{
+                        using (var ctx = new AIROSWEB.DAL.Db.AirosTeknikServisEntities()) {
+                            var bolgeOzellikler = ctx.TblIcerikler.Where(x => x.BolumAdi == "BolgeOzellik" && x.AktifMi == true).OrderBy(x => x.Sira).ToList();
+                            if (bolgeOzellikler.Any())
+                            {
+                                <div class="row g-4 mt-2">
+                                    @foreach(var oz in bolgeOzellikler)
+                                    {
+                                        <div class="col-md-6">
+                                            <div class="p-4 border rounded-4 bg-light shadow-sm h-100">
+                                                <i class="@(string.IsNullOrEmpty(oz.AltBaslik) ? "fas fa-check-circle" : oz.AltBaslik) text-success fa-2x mb-3"></i>
+                                                <h4 class="fw-bold">@oz.Baslik</h4>
+                                                <div class="text-muted mb-0">@Html.Raw(oz.Aciklama?.Replace("{bolge}", bolgeAdi))</div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="row g-4 mt-2">
+                                    <div class="col-md-6">
+                                        <div class="p-4 border rounded-4 bg-light shadow-sm h-100">
+                                            <i class="fas fa-check-circle text-success fa-2x mb-3"></i>
+                                            <h4 class="fw-bold">Aynı Gün Servis</h4>
+                                            <p class="text-muted mb-0">@bolgeAdi sakinlerine özel öncelikli teknik servis randevusu sağlıyoruz.</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="p-4 border rounded-4 bg-light shadow-sm h-100">
+                                            <i class="fas fa-shield-alt text-primary fa-2x mb-3"></i>
+                                            <h4 class="fw-bold">Garantili İşçilik</h4>
+                                            <p class="text-muted mb-0">Değişen parçalar ve yaptığımız tüm işçilik 1 yıl servis garantisi altındadır.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    }
+
+                    <!-- Services List -->
+                    <h3 class="fw-bold mt-5 mb-4">@bolgeAdi Bölgesinde Hizmet Verdiğimiz Alanlar</h3>
+                    <div class="row row-cols-1 row-cols-md-2 g-3">
+                        @foreach (var s in Model.Hizmetler)
+                        {
+                            <div class="col">
+                                <div class="d-flex align-items-center p-3 border rounded-3 bg-white hover-elevate shadow-sm">
+                                    <i class="@(s.Ikon ?? "fas fa-wrench") text-primary me-3 fs-4"></i>
+                                    <span class="fw-bold">@bolgeAdi @s.Baslik</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="sticky-top" style="top: 100px;">
+                    <div class="card shadow-lg border-0 rounded-4 overflow-hidden mb-4">
+                        <div class="card-body p-4 bg-primary text-white text-center">
+                            <i class="fas fa-headset fa-3x mb-3 opacity-50"></i>
+                            <h3 class="fw-bold">Hemen Servis Çağır</h3>
+                            <p class="mb-4 opacity-75">Bursa-@bolgeAdi Hattı</p>
+                            <a href="tel:@(Model.Ayarlar?.Telefon?.Replace(" ", ""))" class="btn btn-light btn-lg w-100 rounded-pill fw-bold py-3 shadow">
+                                <i class="fas fa-phone-alt me-2"></i> @Model.Ayarlar.Telefon
+                            </a>
+                            <a href="https://wa.me/@(Model.Ayarlar?.WhatsApp?.ToWhatsAppNumber())" class="btn btn-outline-light w-100 rounded-pill mt-3 py-2" target="_blank">
+                                <i class="fab fa-whatsapp me-2"></i> WhatsApp Destek
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="card shadow-sm border-0 rounded-4 p-4 bg-light">
+                        <h5 class="fw-bold mb-3">Hizmet Verdiğimiz Yerler</h5>
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach (var b in Model.HizmetBolgeleri.Take(12))
+                            {
+                                <a href="@Url.Action("BolgeHizmet", "Home", new { slug = (b.Slug ?? AIROSWEB.Helpers.SeoHelper.ToSeoUrl(b.BolgeAdi)) })" class="badge @(b.BolgeAdi == bolgeAdi ? "bg-primary" : "bg-white text-dark border") text-decoration-none px-3 py-2 rounded-pill">
+                                    @b.BolgeAdi
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .leading-relaxed { line-height: 1.8; }
+    .bg-primary-light { background-color: rgba(13, 110, 253, 0.05); }
+    .page-header { min-height: 250px; display: flex; align-items: center; justify-content: center; }
+</style>

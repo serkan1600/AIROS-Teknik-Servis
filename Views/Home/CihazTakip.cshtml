@@ -1,0 +1,115 @@
+﻿@model AIROSWEB.Models.LayoutViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var randevular = ViewBag.Randevular as List<AIROSWEB.DAL.Db.TblRandevular>;
+}
+
+<!-- Page Header Start -->
+<div class="container-fluid page-header py-5 mb-5 wow fadeIn" data-wow-delay="0.1s" style="background: linear-gradient(rgba(15, 23, 42, .8), rgba(15, 23, 42, .8)), url('/Content/Images/bg-service.jpg') center center no-repeat; background-size: cover;">
+    <div class="container text-center py-5">
+        <h1 class="display-4 text-white animated slideInDown mb-4">Canlı Servis Takip</h1>
+        <p class="text-white opacity-75 fs-5">Telefon numaranızla cihazınızın durumunu ve servis süreçlerini 7/24 anlık takip edin.</p>
+    </div>
+</div>
+<!-- Page Header End -->
+
+<div class="container py-5" style="min-height: 50vh;">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 rounded-4 p-4 p-md-5 relative overflow-hidden">
+                <form action="@Url.Action("CihazTakip", "Home")" method="post" class="mb-4">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3">
+                        <div class="col-md-9">
+                            <label class="form-label fw-bold">Kayıtlı Telefon Numaranız <span class="text-danger">*</span></label>
+                            <div class="input-group input-group-lg shadow-sm border rounded">
+                                <span class="input-group-text bg-white border-0"><i class="fas fa-phone-alt text-primary"></i></span>
+                                <input type="text" name="telefonNo" class="form-control border-0 bg-white ps-0 fw-bold" placeholder="05XX XXX XX XX" value="@ViewBag.TelefonNumarasi" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold shadow-sm rounded"><i class="fas fa-search me-2"></i> Sorgula</button>
+                        </div>
+                    </div>
+                </form>
+
+                @if (ViewBag.Hata != null)
+                {
+                    <div class="alert alert-danger d-flex align-items-center animate__animated animate__headShake shadow-sm" role="alert">
+                        <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                        <div class="fw-bold">@ViewBag.Hata</div>
+                    </div>
+                }
+
+                @if (randevular != null && randevular.Any())
+                {
+                    <h4 class="fw-bold mt-2 mb-4">Hizmet Geçmişiniz <span class="badge bg-primary rounded-pill">@randevular.Count</span></h4>
+                    
+                    <div class="mt-4">
+                        @foreach (var r in randevular)
+                        {
+                            // Duruma göre renkler ve ikonlar
+                            string bgColor = "bg-secondary";
+                            string icon = "fa-clock";
+                            string statusText = "Beklemede";
+                            int progress = 25;
+
+                            if(r.Durum == "Onaylandı" || r.Durum == "Tamamlandı") { 
+                                if(r.Durum == "Onaylandı") { progress = 60; bgColor = "bg-info"; icon = "fa-tools"; statusText = "İşlemde / Ustamız Yolda"; }
+                                else { progress = 100; bgColor = "bg-success"; icon = "fa-check-circle"; statusText = "Tamamlandı / Teslim Edildi"; }
+                            }
+                            else if(r.Durum == "İptal") { 
+                                progress = 100; bgColor = "bg-danger"; icon = "fa-times-circle"; statusText = "İptal Edildi";
+                            }
+                            
+                            <div class="card mb-4 border border-1 border-light shadow animate__animated animate__fadeInUp">
+                                <div class="card-header bg-white border-bottom-0 pt-3 pb-0 d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold text-muted small"><i class="fas fa-calendar-alt me-2"></i> @r.OlusturmaTarihi.ToString("dd MMM yyyy HH:mm")</span>
+                                    <span class="badge @bgColor px-3 py-2 fs-6 rounded-pill shadow-sm"><i class="fas @icon me-1"></i> @statusText</span>
+                                </div>
+                                <div class="card-body">
+                                    <h4 class="card-title fw-bold text-dark mb-3">@(r.HizmetAdi ?? "Genel Servis Talebi")</h4>
+                                    
+                                    @if(!string.IsNullOrEmpty(r.Mesaj)) {
+                                        <div class="bg-light p-3 rounded mb-3 small fst-italic text-muted border-start border-3 border-secondary">
+                                            "@r.Mesaj"
+                                        </div>
+                                    }
+                                    
+                                    <div class="mt-4 position-relative">
+                                        <div class="progress shadow-sm" style="height: 12px; border-radius: 6px;">
+                                            <div class="progress-bar progress-bar-striped progress-bar-animated @bgColor" role="progressbar" style="width: @progress%" aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <div class="d-flex justify-content-between mt-2 text-muted small fw-bold px-1">
+                                            <span><i class="fas fa-file-signature text-secondary"></i> Kayıt</span>
+                                            <span><i class="fas fa-truck text-info"></i> İşlemde</span>
+                                            <span><i class="fas fa-flag-checkered text-success"></i> Sonuç</span>
+                                        </div>
+                                    </div>
+                                    
+                                    @if(!string.IsNullOrEmpty(r.YoneticiNotu)) {
+                                        <div class="mt-4 border border-light bg-light p-3 rounded-3 shadow-sm position-relative">
+                                            <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-warning text-dark border border-white">
+                                                <i class="fas fa-star text-white"></i> Not
+                                            </span>
+                                            <p class="mb-0 fw-bold text-dark mt-2">@r.YoneticiNotu</p>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                
+                @if(randevular == null)
+                {
+                    <div class="text-center text-muted p-5 bg-light rounded-4 border border-dashed mt-4">
+                        <i class="fas fa-search-location fa-4x mb-3 text-secondary opacity-50"></i>
+                        <h4 class="fw-bold">Kayıdınızı Sorgulayın</h4>
+                        <p class="mb-0">Yukarıdaki alana cep telefonu numaranızı girerek tüm eski ve devam eden servis süreçlerinize ulaşabilirsiniz.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
